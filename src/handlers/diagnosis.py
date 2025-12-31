@@ -153,3 +153,4 @@ async def readiness_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     from src.handlers.recommendation import show_recommendation
     return await show_recommendation(update, context)
 
+

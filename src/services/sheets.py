@@ -71,3 +71,4 @@ async def append_lead_row(row_data: List[str]) -> None:
     except Exception as e:
         raise RuntimeError(f"Failed to append row to Google Sheets: {e}")
 
+

@@ -43,3 +43,4 @@ async def setup_bot_commands(application) -> None:
     
     await application.bot.set_my_commands(commands)
 
+

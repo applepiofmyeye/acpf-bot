@@ -8,15 +8,12 @@ from src.i18n.messages import get_text, get_nested_text
 from src.keyboards.buttons import (
     starter_recommendation_keyboard,
     core_recommendation_keyboard,
-    gate_question_keyboard,
-    gate_rejection_keyboard,
     upsell_team_keyboard,
     upsell_intent_keyboard,
     upsell_rejected_keyboard,
 )
 from src.handlers.start import (
     RECOMMENDATION,
-    GATE_QUESTION,
     UPSELL_TEAM,
     UPSELL_INTENT,
     REG_NAME,
@@ -58,54 +55,12 @@ async def select_starter_callback(update: Update, context: ContextTypes.DEFAULT_
 
 
 async def select_core_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle Core selection - show gate question."""
+    """Handle Core selection - proceed to registration."""
     query = update.callback_query
     await query.answer()
     
     context.user_data["track"] = "core"
-    lang = context.user_data.get("lang", "en")
-    
-    await query.message.reply_text(
-        get_text("gateQuestion", lang),
-        reply_markup=gate_question_keyboard(lang),
-    )
-    
-    return GATE_QUESTION
-
-
-async def gate_yes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle gate question 'Yes' - proceed to Core registration."""
-    query = update.callback_query
-    await query.answer()
-    
     context.user_data["program"] = "core"
-    
-    from src.handlers.registration import start_form
-    return await start_form(update, context)
-
-
-async def gate_no_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle gate question 'No' - redirect to Starter."""
-    query = update.callback_query
-    await query.answer()
-    
-    lang = context.user_data.get("lang", "en")
-    
-    await query.message.reply_text(
-        get_text("gateNoResponse", lang),
-        reply_markup=gate_rejection_keyboard(lang),
-    )
-    
-    return GATE_QUESTION
-
-
-async def register_starter_fallback_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle Starter registration after gate rejection."""
-    query = update.callback_query
-    await query.answer()
-    
-    context.user_data["track"] = "starter"
-    context.user_data["program"] = "starter"
     
     from src.handlers.registration import start_form
     return await start_form(update, context)
@@ -235,4 +190,5 @@ async def show_upsell_rejected(update: Update, context: ContextTypes.DEFAULT_TYP
     )
     
     return RECOMMENDATION
+
 

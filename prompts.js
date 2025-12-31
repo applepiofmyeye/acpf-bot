@@ -188,17 +188,17 @@ Company Name: ACPF GROUP SDN. BHD.
 Account No: 3211951736
 Bank: PUBLIC BANK
 Swift Code: PBBEMYKL
+Amount: RM{amount}
 
 After completing the transfer, please send your payment screenshot to the person in charge for confirmation.
 Our staff will assist you with the remaining registration process.`,
     error: "Submitted successfully, but there was a system error. Admin will follow up.",
     sessionCleared: "Your session has been reset. Type /start to begin again.",
     languagePrompt: "Please select your language:",
-    btnChinese: "中文",
-    btnEnglish: "English"
+    btnChinese: "🇨🇳 中文",
+    btnEnglish: "🇬🇧 English"
   }
 };
-
 const painPointSummary = {
   q1: {
     a: { zh: "技术强但规模卡住", en: "Strong skills but stuck at scale" },

@@ -21,7 +21,6 @@ from src.handlers.start import (
     Q3,
     READINESS,
     RECOMMENDATION,
-    GATE_QUESTION,
     UPSELL_TEAM,
     UPSELL_INTENT,
     REG_NAME,
@@ -40,9 +39,6 @@ from src.handlers.diagnosis import (
 from src.handlers.recommendation import (
     select_starter_callback,
     select_core_callback,
-    gate_yes_callback,
-    gate_no_callback,
-    register_starter_fallback_callback,
     apply_core_review_callback,
     upsell_team_yes_callback,
     upsell_team_no_callback,
@@ -102,11 +98,6 @@ def main() -> None:
                 CallbackQueryHandler(select_core_callback, pattern=r"^select_core$"),
                 CallbackQueryHandler(apply_core_review_callback, pattern=r"^apply_core_review$"),
             ],
-            GATE_QUESTION: [
-                CallbackQueryHandler(gate_yes_callback, pattern=r"^gate_yes$"),
-                CallbackQueryHandler(gate_no_callback, pattern=r"^gate_no$"),
-                CallbackQueryHandler(register_starter_fallback_callback, pattern=r"^register_starter_fallback$"),
-            ],
             UPSELL_TEAM: [
                 CallbackQueryHandler(upsell_team_yes_callback, pattern=r"^upsell_team_yes$"),
                 CallbackQueryHandler(upsell_team_no_callback, pattern=r"^upsell_team_no$"),
@@ -162,4 +153,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
