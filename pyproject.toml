@@ -1,0 +1,16 @@
+[project]
+name = "acpf-bot"
+version = "1.0.0"
+description = "ACPF Telegram Bot - Bilingual funnel for beauty industry programs"
+requires-python = ">=3.12"
+dependencies = [
+    "python-telegram-bot>=21.0",
+    "python-dotenv>=1.0.0",
+    "gspread>=6.0.0",
+    "google-auth>=2.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
