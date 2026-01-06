@@ -13,44 +13,44 @@ PROMPTS = {
     "zh": {
         "welcome": "欢迎来到 ACPF。\n请选择您的语言：",
         "languageChanged": "语言已更改为中文。",
-        "positioning": "ACPF 专注于协助美业高阶经营者突破瓶颈、建立系统。\n\n在推荐任何方案之前，我们会先了解你目前的阶段与需求。\n\n请回答以下问题，让我们为你提供最适合的方向。",
-        "startDiagnosis": "🚀 开始诊断",
+        "positioning": "ACPF 专注协助美业老板，从靠自己撑到「有系统、有团队、能长期运转」。\n\n在推荐任何课程前，我们会先了解你现在卡在哪一个阶段。\n\n请花 2 分钟回答以下问题，我们会给你最适合的方向。",
+        "startDiagnosis": "开始诊断",
         "painQuestions": {
             "q1": {
-                "question": "📊 以下哪一个最接近你目前的状态？",
+                "question": "以下哪一项，最接近你目前的状态?",
                 "options": {
-                    "a": "我技术很强，但规模一直卡住",
-                    "b": "我有团队，但无法复制放大",
-                    "c": "我有名气/规模，但缺乏系统",
-                    "d": "我在高位，但下一步不清楚",
+                    "a": "技术没问题，但生意一直卡在一个规模",
+                    "b": "有门店 / 团队，但很难复制、很难放大",
+                    "c": "有知名度，但缺乏系统，走不远",
+                    "d": "位置已经不低，但下一步方向不清楚",
                 },
             },
             "q2": {
-                "question": "🔍 你目前最困扰的「非技术」问题是？",
+                "question": "如果不谈技术，你现在最头痛的是？",
                 "options": {
-                    "a": "我的客源不稳定，靠运气",
-                    "b": "我的团队无法独立运作",
-                    "c": "我的收入有上限，时间被锁",
-                    "d": "我有资源，但无法整合成体系",
+                    "a": "客源时好时坏，很难稳定",
+                    "b": "团队需要你一直看，无法独立",
+                    "c": "收入有上限，时间被生意绑住",
+                    "d": "明明很努力，但感觉一直在原地打转",
                 },
             },
             "q3": {
-                "question": "⏰ 如果这状态再持续2年，你最担心什么？",
+                "question": "如果这样的状态再持续 2 年，你最担心的是？",
                 "options": {
-                    "a": "我担心生意停滞，被超越",
-                    "b": "我担心永远只是老板",
-                    "c": "我担心影响力无法变现",
-                    "d": "我担心精力耗尽，没有累积",
+                    "a": "生意停在原地，被后来者追上",
+                    "b": "永远只是老板，而不是平台",
+                    "c": "有影响力，但无法真正变现",
+                    "d": "人很累，但什么都没累积下来",
                 },
             },
         },
         "readinessQuestion": {
-            "question": "💡 你目前解决这个问题的状态是？",
+            "question": "你目前对于解决这个问题的状态是？",
             "options": {
-                "a": "我想先了解，还没准备投入",
-                "b": "方向对的话，我愿意学习",
-                "c": "我正在找方法，准备行动",
-                "d": "我很清楚问题，需要方案",
+                "a": "我只是想先了解， 还没准备好投入",
+                "b": "如果方向对，我愿意花时间学习",
+                "c": "我已经在找方法，准备行动",
+                "d": "我很清楚问题，需要一套系统化方案",
             },
         },
         "recommendStarter": {
@@ -59,8 +59,8 @@ PROMPTS = {
             "upsell": "🔎 申请 Core 评估",
         },
         "recommendCore": {
-            "message": "根据你的经营阶段，你更适合进入 ACPF Core。\n\nCore 每年两次（7月与12月），专为准备突破瓶颈的高阶经营者设计。",
-            "cta": "📝 报名 Core（RM5,997）",
+            "message": "看了你的情况，其实你已经不是新手了。\n现在卡住，不是你不努力，而是一个人撑太久了。\n\n这个阶段，再学零散技巧已经帮不大。\n你需要的是一套可以放大、生意能跑的系统。\n\n建议你直接报名 ACPF 新美业大学生意管理核心课程（RM5,997）。\n如果你准备好走下一步，现在就完成报名和付款，锁定名额。",
+            "cta": "我要踏出第一步",
         },
         "upsellQuestions": {
             "q1": {
@@ -69,9 +69,9 @@ PROMPTS = {
                 "no": "❌ 没有",
             },
             "q2": {
-                "question": "你目前更接近哪一种？",
-                "scale": "📈 想复制放大",
-                "foundation": "🏗️ 想建立系统",
+                "question": "你目前更接近哪一个？",
+                "scale": "打造可复制的门店 / 团队",
+                "foundation": "建立一套长期可运转的系统",
             },
         },
         "upsellApproved": "我们将为你安排 Core 人工确认，请留下资料。",
@@ -83,6 +83,7 @@ PROMPTS = {
         "gateNoResponse": "Core 课程需要先完成 Starter 作为基础。\n\nStarter 每两个月开班一次，费用为 RM588。\n\n如果你准备好了，可以先报名 Starter。",
         "registerStarter": "📝 报名 Starter",
         "form": {
+            "disclaimer": "Disclaimer: 你的资料将用于新美业大学生意管理课程评估与联系安排。",
             "askName": "请输入你的全名：",
             "askPhone": "请输入你的电话号码（WhatsApp）：",
             "askEmail": "请输入你的电子邮箱（输入 skip 跳过）：",
@@ -95,19 +96,18 @@ PROMPTS = {
         "summary": "请确认你的资料：\n\n姓名：{name}\n电话：{phone}\n邮箱：{email}\n业务类型：{businessType}\n课程：{program}\n核心痛点：{painPoint}",
         "confirm": "✅ 确认提交",
         "edit": "✏️ 重新填写",
-        "success": """你的报名已收到。
-
-我们的团队将尽快与你联系，协助你完成后续流程。
-
-【付款资料】
-公司名称： ACPF GROUP SDN. BHD.
+        "success": "你的课程申请已进入下一步。完成费用确认后，我们的团队将为你安排课程与相关说明。",
+        "paymentInfo": """公司名称： ACPF GROUP SDN. BHD.
 ACC NO： 3211951736
 BANK： PUBLIC BANK
 Swift Code: PBBEMYKL
-金额: RM{amount}
 
-请完成转账后，将付款截图发送给负责人确认。
-工作人员将协助你完成后续报名流程。""",
+提交报名后，我们将尽快与你联系。
+
+届时请将转账付款截图发送给负责人进行确认，
+
+确认完成后，我们会第一时间通知你相关课程安排与详细信息。""",
+        "paymentButton": "付款资料",
         "error": "提交成功，但系统出现错误。管理员将会跟进处理。",
         "sessionCleared": "你的会话已重置。输入 /start 重新开始。",
         "languagePrompt": "请选择您的语言：",
@@ -117,11 +117,11 @@ Swift Code: PBBEMYKL
     "en": {
         "welcome": "Welcome to ACPF.\nPlease select your language:",
         "languageChanged": "Language changed to English.",
-        "positioning": "ACPF focuses on helping high-level beauty industry operators break through bottlenecks and build systems.\n\nBefore recommending any program, we first understand your current stage and needs.\n\nPlease answer the following questions so we can provide the most suitable direction for you.",
-        "startDiagnosis": "🚀 Start Diagnosis",
+        "positioning": "ACPF helps beauty business owners move from doing everything alone to building systems, teams, and sustainable operations.\n\nBefore we recommend any program, we need to understand where you're currently stuck.\n\nTake 2 minutes to answer these questions, and we'll point you in the right direction.",
+        "startDiagnosis": "Start Diagnosis",
         "painQuestions": {
             "q1": {
-                "question": "📊 Which one best describes your current situation?",
+                "question": "Which one best describes your current situation?",
                 "options": {
                     "a": "I have strong skills but I'm stuck at scale",
                     "b": "I have a team but can't replicate or scale",
@@ -130,7 +130,7 @@ Swift Code: PBBEMYKL
                 },
             },
             "q2": {
-                "question": "🔍 What is your biggest non-technical problem?",
+                "question": "If we don't talk about technical skills, what's your biggest headache right now?",
                 "options": {
                     "a": "My client flow is unstable, relying on luck",
                     "b": "My team can't operate independently",
@@ -139,7 +139,7 @@ Swift Code: PBBEMYKL
                 },
             },
             "q3": {
-                "question": "⏰ If this continues for 2 years, what concerns you most?",
+                "question": "If this situation continues for another 2 years, what concerns you most?",
                 "options": {
                     "a": "I worry about being overtaken by newcomers",
                     "b": "I worry about being just a boss, not a platform",
@@ -149,12 +149,12 @@ Swift Code: PBBEMYKL
             },
         },
         "readinessQuestion": {
-            "question": "💡 What is your readiness to solve this problem?",
+            "question": "What is your current readiness to solve this problem?",
             "options": {
-                "a": "I just want to understand first",
-                "b": "I'm willing to learn if the direction is right",
-                "c": "I'm actively looking for solutions",
-                "d": "I'm clear on the problem, I need a plan",
+                "a": "I just want to understand first, not ready to commit",
+                "b": "If the direction is right, I'm willing to invest time to learn",
+                "c": "I'm already looking for methods, ready to take action",
+                "d": "I'm very clear on the problem, need a systematic solution",
             },
         },
         "recommendStarter": {
@@ -163,8 +163,8 @@ Swift Code: PBBEMYKL
             "upsell": "🔎 Apply for Core Review",
         },
         "recommendCore": {
-            "message": "Based on your business stage, you are better suited for ACPF Core.\n\nCore runs twice a year (July and December), designed for advanced operators ready to break through bottlenecks.",
-            "cta": "📝 Register Core (RM5,997)",
+            "message": "Based on your answers, you're beyond the beginner stage.\n\nThe issue isn't your effort—it's that you've been going solo for too long.\n\nScattered tips won't help now. You need a scalable system that runs without you.\n\nWe recommend ACPF's New Beauty Business Management Core Program (RM5,997).\n\nReady to move forward? Complete registration and payment to secure your spot.",
+            "cta": "I Want to Take the First Step",
         },
         "upsellQuestions": {
             "q1": {
@@ -174,8 +174,8 @@ Swift Code: PBBEMYKL
             },
             "q2": {
                 "question": "Which describes you better?",
-                "scale": "📈 Want to scale up",
-                "foundation": "🏗️ Want to build systems",
+                "scale": "Build replicable shop/team",
+                "foundation": "Build a long-term sustainable system",
             },
         },
         "upsellApproved": "We will arrange a Core manual review for you. Please provide your details.",
@@ -187,6 +187,7 @@ Swift Code: PBBEMYKL
         "gateNoResponse": "The Core program requires completing Starter as a foundation.\n\nStarter runs every two months at RM588.\n\nIf you are ready, you may register for Starter first.",
         "registerStarter": "📝 Register Starter",
         "form": {
+            "disclaimer": "Disclaimer: Your information will be used for the New Beauty Business Management Course evaluation and contact arrangement.",
             "askName": "Please enter your full name:",
             "askPhone": "Please enter your phone number (WhatsApp):",
             "askEmail": "Please enter your email (type 'skip' to skip):",
@@ -199,19 +200,18 @@ Swift Code: PBBEMYKL
         "summary": "Please confirm your details:\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nBusiness Type: {businessType}\nProgram: {program}\nKey Pain Point: {painPoint}",
         "confirm": "✅ Confirm",
         "edit": "✏️ Edit",
-        "success": """Your registration has been received.
-
-Our team will contact you shortly to assist with the next steps.
-
-[Payment Details]
-Company Name: ACPF GROUP SDN. BHD.
+        "success": "Your course application has entered the next step. After payment confirmation, our team will arrange the course and related information for you.",
+        "paymentInfo": """Company Name: ACPF GROUP SDN. BHD.
 Account No: 3211951736
 Bank: PUBLIC BANK
 Swift Code: PBBEMYKL
-Amount: RM{amount}
 
-After completing the transfer, please send your payment screenshot to the person in charge for confirmation.
-Our staff will assist you with the remaining registration process.""",
+After submitting your registration, we will contact you as soon as possible.
+
+Please send your payment screenshot to the person in charge for confirmation.
+
+Once confirmed, we will notify you immediately about course arrangements and detailed information.""",
+        "paymentButton": "Payment Details",
         "error": "Submitted successfully, but there was a system error. Admin will follow up.",
         "sessionCleared": "Your session has been reset. Type /start to begin again.",
         "languagePrompt": "Please select your language:",

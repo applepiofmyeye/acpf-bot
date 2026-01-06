@@ -52,6 +52,7 @@ from src.handlers.registration import (
     handle_business_type,
     confirm_submit_callback,
     edit_form_callback,
+    show_payment_details_callback,
 )
 from src.handlers.commands import (
     restart_command,
@@ -127,6 +128,7 @@ def main() -> None:
             CommandHandler("start", start_command),
             CommandHandler("restart", restart_command),
             CommandHandler("language", language_command),
+            CallbackQueryHandler(show_payment_details_callback, pattern=r"^show_payment_details$"),
         ],
         per_user=True,
         per_chat=True,

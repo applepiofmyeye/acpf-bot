@@ -19,7 +19,7 @@ PHONE_PATTERN = re.compile(r'^[\d\s\-\+\(\)]{8,}$')
 
 
 async def start_form(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Start the registration form - ask for name."""
+    """Start the registration form - show disclaimer and ask for name."""
     lang = context.user_data.get("lang", "en")
     
     # Reset form data
@@ -31,6 +31,11 @@ async def start_form(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     }
     
     form_text = get_nested_text(lang, "form")
+    
+    # Show disclaimer first
+    await update.callback_query.message.reply_text(form_text.get("disclaimer", ""))
+    
+    # Then ask for name
     await update.callback_query.message.reply_text(form_text.get("askName", "Please enter your full name:"))
     
     return REG_NAME
@@ -214,12 +219,16 @@ Timestamp: {datetime.now().isoformat()}"""
         from src.services.sheets import append_lead_row
         await append_lead_row(row_data)
         
-        # Get the correct price based on program
-        amount = PROGRAM_PRICES.get(program, "588")
+        # Send success message
+        await update.callback_query.message.reply_text(get_text("success", lang))
         
-        # Send success message with payment info
-        success_message = get_text("success", lang).format(amount=amount)
-        await update.callback_query.message.reply_text(success_message)
+        # Send payment info with button
+        from src.keyboards.buttons import payment_details_keyboard
+        payment_text = get_text("paymentInfo", lang)
+        await update.callback_query.message.reply_text(
+            payment_text,
+            reply_markup=payment_details_keyboard(lang),
+        )
         
         # Notify admin
         if ADMIN_CHAT_ID:
@@ -246,6 +255,26 @@ Timestamp: {datetime.now().isoformat()}"""
                 )
             except Exception as admin_err:
                 print(f"Failed to notify admin about error: {admin_err}")
+    
+    return ConversationHandler.END
+
+
+async def show_payment_details_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle payment details button - show payment information."""
+    query = update.callback_query
+    await query.answer()
+    
+    lang = context.user_data.get("lang", "en")
+    program = context.user_data.get("program", "starter")
+    
+    from src.config import PROGRAM_PRICES
+    amount = PROGRAM_PRICES.get(program, "588")
+    
+    payment_text = get_text("paymentInfo", lang)
+    if "{amount}" in payment_text:
+        payment_text = payment_text.format(amount=amount)
+    
+    await query.message.reply_text(payment_text)
     
     return ConversationHandler.END
 
