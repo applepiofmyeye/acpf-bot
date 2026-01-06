@@ -226,12 +226,14 @@ Timestamp: {datetime.now().isoformat()}"""
         # Notify admin
         if ADMIN_CHAT_ID:
             try:
+                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
                 await context.bot.send_message(
-                    chat_id=ADMIN_CHAT_ID,
+                    chat_id=admin_chat_id,
                     text=f"✅ Lead submitted\n\n{lead_info}",
                 )
             except Exception as e:
                 print(f"Failed to notify admin: {e}")
+                # Don't fail the whole process if admin notification fails
         
     except Exception as e:
         print(f"Google Sheets error: {e}")
@@ -242,12 +244,14 @@ Timestamp: {datetime.now().isoformat()}"""
         # Notify admin about error
         if ADMIN_CHAT_ID:
             try:
+                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
                 await context.bot.send_message(
-                    chat_id=ADMIN_CHAT_ID,
+                    chat_id=admin_chat_id,
                     text=f"❌ Lead submission error\n\nError: {e}\n\n{lead_info}",
                 )
             except Exception as admin_err:
                 print(f"Failed to notify admin about error: {admin_err}")
+                # Log the error but don't fail
     
     return ConversationHandler.END
 

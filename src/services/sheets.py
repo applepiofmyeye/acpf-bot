@@ -23,7 +23,18 @@ def get_google_sheets_client() -> gspread.Client:
         raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is not set")
     
     # Parse the JSON credentials
-    credentials_dict = json.loads(GOOGLE_SERVICE_ACCOUNT_JSON)
+    try:
+        # Handle case where JSON might be double-encoded or have extra whitespace
+        json_str = GOOGLE_SERVICE_ACCOUNT_JSON.strip()
+        # If it starts with quotes, it might be double-encoded
+        if json_str.startswith('"') and json_str.endswith('"'):
+            json_str = json_str[1:-1].replace('\\"', '"').replace('\\n', '\n')
+        credentials_dict = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"Invalid JSON in GOOGLE_SERVICE_ACCOUNT_JSON: {e}. "
+            f"Please ensure the JSON is properly formatted. First 100 chars: {GOOGLE_SERVICE_ACCOUNT_JSON[:100]}"
+        )
     
     # Create credentials with required scopes
     scopes = [

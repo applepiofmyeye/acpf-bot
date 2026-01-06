@@ -77,8 +77,9 @@ async def apply_core_review_callback(update: Update, context: ContextTypes.DEFAU
     # Notify admin about upsell request
     if ADMIN_CHAT_ID:
         try:
+            admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
             await context.bot.send_message(
-                chat_id=ADMIN_CHAT_ID,
+                chat_id=admin_chat_id,
                 text=(
                     f"🔔 Core Review Request\n\n"
                     f"User: @{user.username or 'N/A'} (ID: {user.id})\n"
@@ -149,8 +150,9 @@ async def upsell_intent_scale_callback(update: Update, context: ContextTypes.DEF
         # Notify admin about qualification
         if ADMIN_CHAT_ID:
             try:
+                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
                 await context.bot.send_message(
-                    chat_id=ADMIN_CHAT_ID,
+                    chat_id=admin_chat_id,
                     text=(
                         f"✅ Core Review Qualified\n\n"
                         f"User: @{user.username or 'N/A'} (ID: {user.id})\n"
