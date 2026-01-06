@@ -132,6 +132,7 @@ def main() -> None:
         ],
         per_user=True,
         per_chat=True,
+        per_message=True,
     )
     
     # Add handlers

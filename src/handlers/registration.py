@@ -90,13 +90,6 @@ async def handle_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     text = update.message.text.strip()
     form_text = get_nested_text(lang, "form")
     
-    # Allow skip
-    if text.lower() == "skip":
-        context.user_data["form_data"]["email"] = ""
-        # Ask for business type
-        await update.message.reply_text(form_text.get("askBusinessType", "What type of beauty business are you in?"))
-        return REG_BUSINESS
-    
     # Validate email format
     if not EMAIL_PATTERN.match(text):
         await update.message.reply_text(form_text.get("invalidEmail", "Please enter a valid email address."))
