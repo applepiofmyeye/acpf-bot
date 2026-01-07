@@ -1,5 +1,7 @@
 """Google Sheets integration for ACPF Bot."""
 
+import base64
+import binascii
 import json
 from typing import List
 
@@ -12,31 +14,83 @@ from src.config import GOOGLE_SERVICE_ACCOUNT_JSON, SPREADSHEET_ID, SHEET_NAME
 _sheets_client = None
 
 
+def _parse_credentials() -> dict:
+    """Parse Google service account credentials from environment variable.
+    
+    Supports base64-encoded JSON (recommended) or plain JSON.
+    
+    Returns:
+        Credentials dictionary for Google authentication
+        
+    Raises:
+        ValueError: If credentials cannot be parsed
+    """
+    if not GOOGLE_SERVICE_ACCOUNT_JSON:
+        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is not set")
+    
+    value = GOOGLE_SERVICE_ACCOUNT_JSON.strip()
+    
+    if not value:
+        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON is empty")
+    
+    # Try base64 decoding first (validate=False to be lenient with padding)
+    try:
+        decoded = base64.b64decode(value, validate=False)
+        json_str = decoded.decode('utf-8')
+        
+        # Validate decoded string is not empty
+        if not json_str.strip():
+            raise ValueError("Base64 decoded to empty string")
+        
+        # Parse JSON
+        return json.loads(json_str)
+        
+    except (binascii.Error, UnicodeDecodeError):
+        # Not base64, try as plain JSON
+        pass
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"Invalid JSON after base64 decoding: {e}\n"
+            f"Decoded value (first 200 chars): {json_str[:200] if 'json_str' in locals() else 'N/A'}"
+        )
+    
+    # Try as plain JSON
+    json_str = value
+    
+    # Remove quotes if wrapped
+    if json_str.startswith('"') and json_str.endswith('"'):
+        json_str = json_str[1:-1].replace('\\"', '"').replace('\\n', '\n')
+    elif json_str.startswith("'") and json_str.endswith("'"):
+        json_str = json_str[1:-1]
+    
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"Invalid JSON format: {e}\n"
+            f"Input (first 100 chars): {value[:100]}\n"
+            f"Tip: Use base64 encoding: python encode_json.py your_credentials.json"
+        )
+
+
 def get_google_sheets_client() -> gspread.Client:
-    """Get or create Google Sheets client."""
+    """Get or create Google Sheets client.
+    
+    Returns:
+        Authenticated gspread client
+        
+    Raises:
+        ValueError: If credentials are invalid or missing
+    """
     global _sheets_client
     
     if _sheets_client is not None:
         return _sheets_client
     
-    if not GOOGLE_SERVICE_ACCOUNT_JSON:
-        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is not set")
+    # Parse credentials
+    credentials_dict = _parse_credentials()
     
-    # Parse the JSON credentials
-    try:
-        # Handle case where JSON might be double-encoded or have extra whitespace
-        json_str = GOOGLE_SERVICE_ACCOUNT_JSON.strip()
-        # If it starts with quotes, it might be double-encoded
-        if json_str.startswith('"') and json_str.endswith('"'):
-            json_str = json_str[1:-1].replace('\\"', '"').replace('\\n', '\n')
-        credentials_dict = json.loads(json_str)
-    except json.JSONDecodeError as e:
-        raise ValueError(
-            f"Invalid JSON in GOOGLE_SERVICE_ACCOUNT_JSON: {e}. "
-            f"Please ensure the JSON is properly formatted. First 100 chars: {GOOGLE_SERVICE_ACCOUNT_JSON[:100]}"
-        )
-    
-    # Create credentials with required scopes
+    # Create credentials object
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
@@ -47,7 +101,7 @@ def get_google_sheets_client() -> gspread.Client:
         scopes=scopes,
     )
     
-    # Create and cache the client
+    # Create and cache client
     _sheets_client = gspread.authorize(credentials)
     
     return _sheets_client
@@ -56,30 +110,53 @@ def get_google_sheets_client() -> gspread.Client:
 async def append_lead_row(row_data: List[str]) -> None:
     """Append a lead row to the Google Sheet.
     
+    Column order:
+        1. Timestamp (auto)
+        2. Language (中文 / English)
+        3. Telegram User ID
+        4. Telegram Username
+        5. Full Name
+        6. Phone (WhatsApp)
+        7. Email
+        8. Beauty Business Type
+        9. Current Stage (Exploring / Stuck / Scaling)
+        10. Tier Interested (Entry / Core / Premium)
+        11. Reason for Joining
+        12. Source (Bot / Landing Page / Referral)
+    
     Args:
-        row_data: List of values for columns A-L:
-            [Timestamp, Language, TG User ID, TG Username, Full Name,
-             Phone, Email, Business Type, Track, Program, Pain Point, Source]
+        row_data: List of 12 string values matching the column order above
+        
+    Raises:
+        ValueError: If SPREADSHEET_ID is not set or spreadsheet/worksheet not found
+        RuntimeError: If row append fails
     """
     if not SPREADSHEET_ID:
         raise ValueError("SPREADSHEET_ID environment variable is not set")
+    
+    if len(row_data) != 12:
+        raise ValueError(f"Expected 12 columns, got {len(row_data)}")
     
     try:
         client = get_google_sheets_client()
         spreadsheet = client.open_by_key(SPREADSHEET_ID)
         worksheet = spreadsheet.worksheet(SHEET_NAME)
         
-        # Append the row
         worksheet.append_row(
             row_data,
             value_input_option="USER_ENTERED",
             insert_data_option="INSERT_ROWS",
         )
+        
     except gspread.exceptions.SpreadsheetNotFound:
-        raise ValueError(f"Spreadsheet with ID '{SPREADSHEET_ID}' not found. Make sure it's shared with the service account.")
+        raise ValueError(
+            f"Spreadsheet with ID '{SPREADSHEET_ID}' not found. "
+            f"Make sure it's shared with the service account email."
+        )
     except gspread.exceptions.WorksheetNotFound:
-        raise ValueError(f"Worksheet '{SHEET_NAME}' not found in the spreadsheet.")
+        raise ValueError(
+            f"Worksheet '{SHEET_NAME}' not found in the spreadsheet. "
+            f"Available worksheets: {[ws.title for ws in spreadsheet.worksheets()]}"
+        )
     except Exception as e:
         raise RuntimeError(f"Failed to append row to Google Sheets: {e}")
-
-
