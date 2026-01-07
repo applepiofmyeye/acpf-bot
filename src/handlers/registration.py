@@ -6,7 +6,7 @@ from datetime import datetime
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from src.config import PROGRAM_LABELS, PROGRAM_PRICES, ADMIN_CHAT_ID
+from src.config import PROGRAM_LABELS, PROGRAM_PRICES
 from src.i18n.messages import get_text, get_nested_text, build_pain_point_summary
 from src.keyboards.buttons import confirmation_keyboard
 from src.handlers.start import REG_NAME, REG_PHONE, REG_EMAIL, REG_BUSINESS, CONFIRMATION
@@ -165,7 +165,7 @@ async def edit_form_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def submit_lead(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Submit lead to Google Sheets and notify admin."""
+    """Submit lead to Google Sheets."""
     lang = context.user_data.get("lang", "en")
     user = update.callback_query.from_user
     form_data = context.user_data["form_data"]
@@ -177,35 +177,42 @@ async def submit_lead(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     track_label = "CoreReview" if track == "coreReview" else PROGRAM_LABELS.get(track, track)
     pain_point = build_pain_point_summary(pain_answers, lang)
     
-    # Prepare row data for Google Sheets
+    # Map readiness answer to Current Stage
+    # a/b = Exploring, c = Stuck, d = Scaling
+    readiness = context.user_data.get("readiness", "")
+    if readiness in ["a", "b"]:
+        current_stage = "Exploring"
+    elif readiness == "c":
+        current_stage = "Stuck"
+    elif readiness == "d":
+        current_stage = "Scaling"
+    else:
+        current_stage = ""  # Fallback if readiness not set
+    
+    # Map program to Tier Interested
+    # Starter -> Entry, Core -> Core, CoreReview -> Premium
+    tier_mapping = {
+        "starter": "Entry",
+        "core": "Core",
+        "coreReview": "Premium"
+    }
+    tier_interested = tier_mapping.get(program, program_label)
+    
+    # Prepare row data for Google Sheets (updated column structure)
     row_data = [
-        datetime.now().isoformat(),  # Timestamp
+        datetime.now().isoformat(),  # Timestamp (auto)
         "中文" if lang == "zh" else "English",  # Language
         str(user.id),  # Telegram User ID
         user.username or "",  # Telegram Username
         form_data["full_name"],  # Full Name
-        form_data["phone"],  # Phone
+        form_data["phone"],  # Phone (WhatsApp)
         form_data["email"] or "",  # Email
-        form_data["business_type"],  # Business Type
-        track_label,  # Track
-        program_label,  # Program Selected
-        pain_point,  # Key Pain Point
-        "Telegram Bot",  # Source
+        form_data["business_type"],  # Beauty Business Type
+        current_stage,  # Current Stage (Exploring / Stuck / Scaling)
+        tier_interested,  # Tier Interested (Entry / Core / Premium)
+        pain_point,  # Reason for Joining
+        "Bot",  # Source (Bot / Landing Page / Referral)
     ]
-    
-    # Lead info for admin notification
-    lead_info = f"""📋 New Lead
-
-Program: {program_label}
-Track: {track_label}
-Name: {form_data["full_name"]}
-Phone: {form_data["phone"]}
-Email: {form_data["email"] or "-"}
-Business Type: {form_data["business_type"]}
-Key Pain Point: {pain_point}
-Telegram: @{user.username or "N/A"} (ID: {user.id})
-Language: {"中文" if lang == "zh" else "English"}
-Timestamp: {datetime.now().isoformat()}"""
     
     try:
         # Import and call Google Sheets service
@@ -223,35 +230,11 @@ Timestamp: {datetime.now().isoformat()}"""
             reply_markup=payment_details_keyboard(lang),
         )
         
-        # Notify admin
-        if ADMIN_CHAT_ID:
-            try:
-                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
-                await context.bot.send_message(
-                    chat_id=admin_chat_id,
-                    text=f"✅ Lead submitted\n\n{lead_info}",
-                )
-            except Exception as e:
-                print(f"Failed to notify admin: {e}")
-                # Don't fail the whole process if admin notification fails
-        
     except Exception as e:
         print(f"Google Sheets error: {e}")
         
         # Send error message
         await update.callback_query.message.reply_text(get_text("error", lang))
-        
-        # Notify admin about error
-        if ADMIN_CHAT_ID:
-            try:
-                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
-                await context.bot.send_message(
-                    chat_id=admin_chat_id,
-                    text=f"❌ Lead submission error\n\nError: {e}\n\n{lead_info}",
-                )
-            except Exception as admin_err:
-                print(f"Failed to notify admin about error: {admin_err}")
-                # Log the error but don't fail
     
     return ConversationHandler.END
 

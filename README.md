@@ -35,7 +35,11 @@ Create a `.env` file in the project root with the following variables:
 BOT_TOKEN=your_telegram_bot_token
 
 # Google Sheets Configuration
-GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"..."}
+# Use base64-encoded JSON (recommended - no quote escaping issues)
+GOOGLE_SERVICE_ACCOUNT_JSON=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6Ii4uLiJ9
+# Or use plain JSON (not recommended - has formatting issues)
+# GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"..."}
+
 SPREADSHEET_ID=your_google_sheet_id
 SHEET_NAME=Sheet1
 
@@ -76,13 +80,45 @@ Place your welcome image at `assets/welcome.jpg`. The bot will display this imag
 3. Copy the token provided
 
 ### GOOGLE_SERVICE_ACCOUNT_JSON
+
+**Recommended: Use Base64 Encoding** (avoids quote escaping issues)
+
 1. Go to Google Cloud Console
 2. Create or select a project
 3. Enable the Google Sheets API
 4. Go to Credentials > Create Credentials > Service Account
 5. Create the service account
 6. Click on the service account > Keys > Add Key > Create new key > JSON
-7. Copy the entire contents of the JSON file
+7. Download the JSON file
+8. **Encode it to base64** using one of these methods:
+
+   **Python:**
+   ```python
+   import base64
+   import json
+   
+   with open('path/to/your/credentials.json', 'r') as f:
+       json_data = json.load(f)
+   
+   # Encode to base64
+   encoded = base64.b64encode(json.dumps(json_data).encode()).decode()
+   print(encoded)
+   ```
+
+   **Command line (Linux/Mac):**
+   ```bash
+   base64 -i credentials.json | tr -d '\n'
+   ```
+
+   **Command line (Windows PowerShell):**
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("credentials.json"))
+   ```
+
+9. Copy the base64-encoded string and use it as `GOOGLE_SERVICE_ACCOUNT_JSON` in your `.env` file
+
+**Alternative: Plain JSON** (not recommended - has quote escaping issues)
+- The code also supports plain JSON, but base64 encoding is recommended to avoid formatting headaches
 
 ### SPREADSHEET_ID
 The SPREADSHEET_ID is in the URL: `docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`

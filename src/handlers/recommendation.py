@@ -3,7 +3,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.config import ADMIN_CHAT_ID
 from src.i18n.messages import get_text, get_nested_text
 from src.keyboards.buttons import (
     starter_recommendation_keyboard,
@@ -72,23 +71,6 @@ async def apply_core_review_callback(update: Update, context: ContextTypes.DEFAU
     await query.answer()
     
     lang = context.user_data.get("lang", "en")
-    user = query.from_user
-    
-    # Notify admin about upsell request
-    if ADMIN_CHAT_ID:
-        try:
-            admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
-            await context.bot.send_message(
-                chat_id=admin_chat_id,
-                text=(
-                    f"🔔 Core Review Request\n\n"
-                    f"User: @{user.username or 'N/A'} (ID: {user.id})\n"
-                    f"Language: {'中文' if lang == 'zh' else 'English'}\n"
-                    f"Status: Started upsell flow"
-                ),
-            )
-        except Exception as e:
-            print(f"Failed to notify admin about upsell: {e}")
     
     # Ask upsell question 1
     q = get_nested_text(lang, "upsellQuestions", "q1")
@@ -146,23 +128,6 @@ async def upsell_intent_scale_callback(update: Update, context: ContextTypes.DEF
     if context.user_data["upsell_answers"]["has_team"]:
         context.user_data["track"] = "coreReview"
         context.user_data["program"] = "core"
-        
-        # Notify admin about qualification
-        if ADMIN_CHAT_ID:
-            try:
-                admin_chat_id = int(ADMIN_CHAT_ID) if ADMIN_CHAT_ID.isdigit() else ADMIN_CHAT_ID
-                await context.bot.send_message(
-                    chat_id=admin_chat_id,
-                    text=(
-                        f"✅ Core Review Qualified\n\n"
-                        f"User: @{user.username or 'N/A'} (ID: {user.id})\n"
-                        f"Has Team: Yes\n"
-                        f"Intent: Scale\n"
-                        f"Status: Approved for Core review"
-                    ),
-                )
-            except Exception as e:
-                print(f"Failed to notify admin: {e}")
         
         await query.message.reply_text(get_text("upsellApproved", lang))
         
