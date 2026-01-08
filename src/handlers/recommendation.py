@@ -27,7 +27,7 @@ async def show_recommendation(
     """Show program recommendation based on scoring."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
-    recommendation_str = user_data.recommendation or ProgramType.STARTER.value
+    recommendation_str = ProgramType.CORE.value # Push for Core
     user = (
         update.callback_query.from_user
         if update.callback_query
