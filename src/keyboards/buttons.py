@@ -220,11 +220,6 @@ def confirmation_keyboard(lang: str) -> InlineKeyboardMarkup:
                     get_text("confirm", lang), callback_data="confirm_submit"
                 )
             ],
-            [
-                InlineKeyboardButton(
-                    get_text("edit", lang), callback_data="edit_form_menu"
-                )
-            ],
         ]
     )
 
@@ -314,30 +309,6 @@ def review_answers_keyboard(lang: str) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     get_text("proceedToRecommendation", lang),
                     callback_data="proceed_to_recommendation",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    f"{get_text('editAnswer', lang)} - Q1",
-                    callback_data="review_edit_q1",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    f"{get_text('editAnswer', lang)} - Q2",
-                    callback_data="review_edit_q2",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    f"{get_text('editAnswer', lang)} - Q3",
-                    callback_data="review_edit_q3",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    f"{get_text('editAnswer', lang)} - Q4",
-                    callback_data="review_edit_readiness",
                 )
             ],
         ]
