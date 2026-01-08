@@ -87,7 +87,7 @@ PROMPTS = {
             "askName": "请输入你的全名：",
             "askPhone": "请输入你的电话号码（WhatsApp）：",
             "askEmail": "请输入你的电子邮箱：",
-            "askBusinessType": "你目前从事什么类型的美业？",
+            "askBusinessType": "你目前从事哪一类美业？",
             "invalidName": "请输入有效的姓名（至少2个字符）。",
             "invalidPhone": "请输入有效的电话号码（至少8位数字）。\n例如：+60123456789",
             "invalidEmail": "请输入有效的电子邮箱地址。\n例如：example@email.com",
@@ -107,7 +107,7 @@ PROMPTS = {
         "reviewQ2": "Q2: {answer}",
         "reviewQ3": "Q3: {answer}",
         "reviewQ4": "Q4: {answer}",
-        "proceedToRecommendation": "✅ 继续推荐",
+        "proceedToRecommendation": "✅ 确认",
         "editAnswer": "编辑答案",
         "success": "你的课程申请已进入下一步。完成费用确认后，我们的团队将为你安排课程与相关说明。",
         "paymentInfo": """公司名称： ACPF GROUP SDN. BHD.
