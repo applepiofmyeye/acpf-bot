@@ -9,46 +9,46 @@ from pathlib import Path
 
 def encode_credentials(json_file_path: str) -> str:
     """Encode credentials JSON file to base64.
-    
+
     Args:
         json_file_path: Path to the credentials.json file
-        
+
     Returns:
         Base64-encoded string
     """
     file_path = Path(json_file_path)
-    
+
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {json_file_path}")
-    
+
     # Read and parse JSON to validate it
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             credentials_dict = json.load(f)
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON file: {e}")
-    
+
     # Convert back to JSON string (ensures proper formatting)
     json_str = json.dumps(credentials_dict)
-    
+
     # Encode to base64
-    encoded = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
-    
+    encoded = base64.b64encode(json_str.encode("utf-8")).decode("utf-8")
+
     return encoded
 
 
 def decode_and_verify(base64_str: str) -> dict:
     """Decode base64 string and verify it's valid JSON.
-    
+
     Args:
         base64_str: Base64-encoded JSON string
-        
+
     Returns:
         Decoded credentials dictionary
     """
     try:
         decoded_bytes = base64.b64decode(base64_str)
-        json_str = decoded_bytes.decode('utf-8')
+        json_str = decoded_bytes.decode("utf-8")
         return json.loads(json_str)
     except Exception as e:
         raise ValueError(f"Failed to decode/parse base64: {e}")
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         print("\nOr to verify an existing base64 string:")
         print("  python encode_credentials.py --verify <base64_string>")
         sys.exit(1)
-    
+
     if sys.argv[1] == "--verify" and len(sys.argv) == 3:
         # Verify mode
         base64_str = sys.argv[2]
@@ -89,4 +89,3 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
-
