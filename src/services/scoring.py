@@ -115,4 +115,5 @@ class RecommendationCalculator:
         """
         if core_score > starter_score:
             return ProgramType.CORE
-        return ProgramType.STARTER
+        else: 
+            return ProgramType.CORE
