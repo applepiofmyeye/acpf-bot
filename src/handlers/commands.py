@@ -7,16 +7,39 @@ from src.i18n.messages import get_text
 from src.keyboards.buttons import language_keyboard
 from src import states
 from src.models.user_data import UserData
+from src.services.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle /restart command - clear session and start over."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
+    user = update.effective_user
+
+    logger.info(
+        "Restart command received",
+        extra={
+            "event": "restart_command",
+            "telegram_user_id": user.id if user else None,
+            "state": "ANY",
+        },
+    )
 
     # Keep language preference but reset everything else
     user_data.reset()
     user_data.lang = lang
+
+    logger.info(
+        "Session reset",
+        extra={
+            "event": "session_reset",
+            "telegram_user_id": user.id if user else None,
+            "state": "ANY",
+            "language_preserved": lang,
+        },
+    )
 
     await update.message.reply_text(get_text("sessionCleared", lang))
 
@@ -27,6 +50,17 @@ async def language_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     """Handle /language command - change language preference."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
+    user = update.effective_user
+
+    logger.info(
+        "Language command received",
+        extra={
+            "event": "language_command",
+            "telegram_user_id": user.id if user else None,
+            "state": "ANY",
+            "current_language": lang,
+        },
+    )
 
     await update.message.reply_text(
         get_text("languagePrompt", lang),

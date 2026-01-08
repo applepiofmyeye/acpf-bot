@@ -59,7 +59,7 @@ PROMPTS = {
             "upsell": "🔎 申请 Core 评估",
         },
         "recommendCore": {
-            "message": "看了你的情况，其实你已经不是新手了。\n现在卡住，不是你不努力，而是一个人撑太久了。\n\n这个阶段，再学零散技巧已经帮不大。\n你需要的是一套可以放大、生意能跑的系统。\n\n建议你直接报名 ACPF 新美业大学生意管理核心课程（RM5,997）。\n如果你准备好走下一步，现在就完成报名和付款，锁定名额。",
+            "message": "根据你的回答，你已经不是入门阶段。\n你现在需要的不是更多技巧，而是一套能复制能放大，能长期运转的系统。\n\n我们建议你申请：\n👉 ACPF 新美业大学生意管理课程（RM5,997）\n• 3 天完整的美业体系\n• 海・陆・空新美业系统\n• KPI 与数据化管理\n• Raffles University 官方认证课程",
             "cta": "我要踏出第一步",
         },
         "upsellQuestions": {
@@ -95,7 +95,20 @@ PROMPTS = {
         },
         "summary": "请确认你的资料：\n\n姓名：{name}\n电话：{phone}\n邮箱：{email}\n业务类型：{businessType}\n课程：{program}\n核心痛点：{painPoint}",
         "confirm": "✅ 确认提交",
-        "edit": "✏️ 重新填写",
+        "edit": "✏️ 编辑",
+        "editMenu": "选择要编辑的字段：",
+        "editName": "✏️ 编辑姓名",
+        "editPhone": "✏️ 编辑电话",
+        "editEmail": "✏️ 编辑邮箱",
+        "editBusiness": "✏️ 编辑业务类型",
+        "back": "← 返回",
+        "reviewAnswers": "请检查你的答案：\n\n",
+        "reviewQ1": "Q1: {answer}",
+        "reviewQ2": "Q2: {answer}",
+        "reviewQ3": "Q3: {answer}",
+        "reviewQ4": "Q4: {answer}",
+        "proceedToRecommendation": "✅ 继续推荐",
+        "editAnswer": "编辑答案",
         "success": "你的课程申请已进入下一步。完成费用确认后，我们的团队将为你安排课程与相关说明。",
         "paymentInfo": """公司名称： ACPF GROUP SDN. BHD.
 ACC NO： 3211951736
@@ -163,7 +176,7 @@ Swift Code: PBBEMYKL
             "upsell": "🔎 Apply for Core Review",
         },
         "recommendCore": {
-            "message": "Based on your answers, you're beyond the beginner stage.\n\nThe issue isn't your effort—it's that you've been going solo for too long.\n\nScattered tips won't help now. You need a scalable system that runs without you.\n\nWe recommend ACPF's New Beauty Business Management Core Program (RM5,997).\n\nReady to move forward? Complete registration and payment to secure your spot.",
+            "message": "Based on your answers, you're beyond the beginner stage.\n\nYou don't need more techniques—you need a system that can be replicated, scaled, and run sustainably.\n\nWe recommend:\n👉 ACPF New Beauty Business Management Course (RM5,997)\n• 3-day complete beauty business system\n• Professional Certificate Beauty Management Strategy\n• KPI and data-driven management\n• Raffles University official certified course",
             "cta": "I Want to Take the First Step",
         },
         "upsellQuestions": {
@@ -200,6 +213,19 @@ Swift Code: PBBEMYKL
         "summary": "Please confirm your details:\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nBusiness Type: {businessType}\nProgram: {program}\nKey Pain Point: {painPoint}",
         "confirm": "✅ Confirm",
         "edit": "✏️ Edit",
+        "editMenu": "Select field to edit:",
+        "editName": "✏️ Edit Name",
+        "editPhone": "✏️ Edit Phone",
+        "editEmail": "✏️ Edit Email",
+        "editBusiness": "✏️ Edit Business Type",
+        "back": "← Back",
+        "reviewAnswers": "Please review your answers:\n\n",
+        "reviewQ1": "Q1: {answer}",
+        "reviewQ2": "Q2: {answer}",
+        "reviewQ3": "Q3: {answer}",
+        "reviewQ4": "Q4: {answer}",
+        "proceedToRecommendation": "✅ Proceed to Recommendation",
+        "editAnswer": "Edit Answer",
         "success": "Your course application has entered the next step. After payment confirmation, our team will arrange the course and related information for you.",
         "paymentInfo": """Company Name: ACPF GROUP SDN. BHD.
 Account No: 3211951736

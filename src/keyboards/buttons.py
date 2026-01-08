@@ -27,8 +27,16 @@ def start_diagnosis_keyboard(lang: str) -> InlineKeyboardMarkup:
     )
 
 
-def pain_question_keyboard(question_num: str, lang: str) -> InlineKeyboardMarkup:
-    """Build keyboard for pain point questions (q1, q2, q3)."""
+def pain_question_keyboard(
+    question_num: str, lang: str, show_back: bool = False
+) -> InlineKeyboardMarkup:
+    """Build keyboard for pain point questions (q1, q2, q3).
+
+    Args:
+        question_num: Question number (q1, q2, q3)
+        lang: Language code
+        show_back: Whether to show back button (True for Q2, Q3)
+    """
     options = get_nested_text(lang, "painQuestions", question_num, "options")
 
     buttons = []
@@ -43,11 +51,28 @@ def pain_question_keyboard(question_num: str, lang: str) -> InlineKeyboardMarkup
                 ]
             )
 
+    # Add back button for Q2 and Q3
+    if show_back:
+        prev_question = f"q{int(question_num[1]) - 1}"
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang),
+                    callback_data=f"diag_back_{prev_question}",
+                )
+            ]
+        )
+
     return InlineKeyboardMarkup(buttons)
 
 
-def readiness_keyboard(lang: str) -> InlineKeyboardMarkup:
-    """Build keyboard for readiness question."""
+def readiness_keyboard(lang: str, show_back: bool = True) -> InlineKeyboardMarkup:
+    """Build keyboard for readiness question.
+
+    Args:
+        lang: Language code
+        show_back: Whether to show back button (default True)
+    """
     options = get_nested_text(lang, "readinessQuestion", "options")
 
     buttons = []
@@ -61,6 +86,17 @@ def readiness_keyboard(lang: str) -> InlineKeyboardMarkup:
                     )
                 ]
             )
+
+    # Add back button
+    if show_back:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang),
+                    callback_data="diag_back_q3",
+                )
+            ]
+        )
 
     return InlineKeyboardMarkup(buttons)
 
@@ -184,6 +220,125 @@ def confirmation_keyboard(lang: str) -> InlineKeyboardMarkup:
                     get_text("confirm", lang), callback_data="confirm_submit"
                 )
             ],
-            [InlineKeyboardButton(get_text("edit", lang), callback_data="edit_form")],
+            [
+                InlineKeyboardButton(
+                    get_text("edit", lang), callback_data="edit_form_menu"
+                )
+            ],
+        ]
+    )
+
+
+def edit_form_menu_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Build keyboard for edit form menu (field selection)."""
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    get_text("editName", lang), callback_data="edit_field_name"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_text("editPhone", lang), callback_data="edit_field_phone"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_text("editEmail", lang), callback_data="edit_field_email"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_text("editBusiness", lang), callback_data="edit_field_business"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang), callback_data="back_to_summary"
+                )
+            ],
+        ]
+    )
+
+
+def registration_back_keyboard(
+    lang: str, current_field: str
+) -> InlineKeyboardMarkup | None:
+    """Build keyboard with back button for registration fields.
+
+    Args:
+        lang: Language code
+        current_field: Current field name (full_name, phone, email, business_type)
+
+    Returns:
+        Keyboard with back button, or None if no back button needed (first field)
+    """
+    if current_field == "full_name":
+        return None  # No back button on first field
+
+    buttons = []
+    if current_field == "phone":
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang), callback_data="reg_back_name"
+                )
+            ]
+        )
+    elif current_field == "email":
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang), callback_data="reg_back_phone"
+                )
+            ]
+        )
+    elif current_field == "business_type":
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    get_text("back", lang), callback_data="reg_back_email"
+                )
+            ]
+        )
+
+    return InlineKeyboardMarkup(buttons) if buttons else None
+
+
+def review_answers_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Build keyboard for review answers screen."""
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    get_text("proceedToRecommendation", lang),
+                    callback_data="proceed_to_recommendation",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"{get_text('editAnswer', lang)} - Q1",
+                    callback_data="review_edit_q1",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"{get_text('editAnswer', lang)} - Q2",
+                    callback_data="review_edit_q2",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"{get_text('editAnswer', lang)} - Q3",
+                    callback_data="review_edit_q3",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"{get_text('editAnswer', lang)} - Q4",
+                    callback_data="review_edit_readiness",
+                )
+            ],
         ]
     )

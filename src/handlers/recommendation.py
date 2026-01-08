@@ -15,7 +15,10 @@ from src import states
 from src.enums import ProgramType
 from src.models.user_data import UserData
 from src.services.upsell import UpsellQualifier
+from src.services.logging_config import get_logger
 from src.handlers.registration import start_form
+
+logger = get_logger(__name__)
 
 
 async def show_recommendation(
@@ -25,6 +28,21 @@ async def show_recommendation(
     user_data = UserData(context)
     lang = user_data.lang or "en"
     recommendation_str = user_data.recommendation or ProgramType.STARTER.value
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
+    )
+
+    logger.info(
+        "Recommendation shown",
+        extra={
+            "event": "recommendation_shown",
+            "telegram_user_id": user.id if user else None,
+            "state": "RECOMMENDATION",
+            "recommendation": recommendation_str,
+        },
+    )
 
     if recommendation_str == ProgramType.CORE.value:
         rec = get_nested_text(lang, "recommendCore")
@@ -53,6 +71,16 @@ async def select_starter_callback(
     user_data.track = ProgramType.STARTER.value
     user_data.program = ProgramType.STARTER.value
 
+    logger.info(
+        "Starter program selected",
+        extra={
+            "event": "program_selected",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "RECOMMENDATION",
+            "program": ProgramType.STARTER.value,
+        },
+    )
+
     return await start_form(update, context)
 
 
@@ -67,6 +95,16 @@ async def select_core_callback(
     user_data.track = ProgramType.CORE.value
     user_data.program = ProgramType.CORE.value
 
+    logger.info(
+        "Core program selected",
+        extra={
+            "event": "program_selected",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "RECOMMENDATION",
+            "program": ProgramType.CORE.value,
+        },
+    )
+
     return await start_form(update, context)
 
 
@@ -79,9 +117,30 @@ async def apply_core_review_callback(
 
     user_data = UserData(context)
     lang = user_data.lang or "en"
+    user = query.from_user
+
+    logger.info(
+        "Core Review request started",
+        extra={
+            "event": "core_review_request",
+            "telegram_user_id": user.id,
+            "state": "RECOMMENDATION",
+        },
+    )
 
     # Ask upsell question 1
     q = get_nested_text(lang, "upsellQuestions", "q1")
+
+    logger.info(
+        "Upsell question Q1 asked",
+        extra={
+            "event": "upsell_question_asked",
+            "telegram_user_id": user.id,
+            "state": "UPSELL_TEAM",
+            "question": "q1",
+        },
+    )
+
     await query.message.reply_text(
         q.get("question", ""),
         reply_markup=upsell_team_keyboard(lang),
@@ -100,6 +159,17 @@ async def upsell_team_yes_callback(
     user_data = UserData(context)
     user_data.set_upsell_answer("has_team", True)
 
+    logger.info(
+        "Upsell question Q1 answer received",
+        extra={
+            "event": "upsell_answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "UPSELL_TEAM",
+            "question": "q1",
+            "answer": "has_team=True",
+        },
+    )
+
     return await ask_upsell_intent(update, context)
 
 
@@ -113,6 +183,17 @@ async def upsell_team_no_callback(
     user_data = UserData(context)
     user_data.set_upsell_answer("has_team", False)
 
+    logger.info(
+        "Upsell question Q1 answer received",
+        extra={
+            "event": "upsell_answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "UPSELL_TEAM",
+            "question": "q1",
+            "answer": "has_team=False",
+        },
+    )
+
     return await ask_upsell_intent(update, context)
 
 
@@ -121,6 +202,21 @@ async def ask_upsell_intent(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user_data = UserData(context)
     lang = user_data.lang or "en"
     q = get_nested_text(lang, "upsellQuestions", "q2")
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
+    )
+
+    logger.info(
+        "Upsell question Q2 asked",
+        extra={
+            "event": "upsell_question_asked",
+            "telegram_user_id": user.id if user else None,
+            "state": "UPSELL_INTENT",
+            "question": "q2",
+        },
+    )
 
     await update.callback_query.message.reply_text(
         q.get("question", ""),
@@ -141,16 +237,45 @@ async def upsell_intent_scale_callback(
     user_data.set_upsell_answer("intent", "scale")
     lang = user_data.lang or "en"
 
+    logger.info(
+        "Upsell question Q2 answer received",
+        extra={
+            "event": "upsell_answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "UPSELL_INTENT",
+            "question": "q2",
+            "answer": "intent=scale",
+        },
+    )
+
     # Check if qualifies for Core Review using UpsellQualifier
     qualifier = UpsellQualifier()
     if qualifier.qualifies_for_core_review(user_data):
         user_data.track = ProgramType.CORE_REVIEW.value
         user_data.program = ProgramType.CORE.value
 
+        user = query.from_user
+        logger.info(
+            "Core Review qualified",
+            extra={
+                "event": "core_review_qualified",
+                "telegram_user_id": user.id,
+                "state": "UPSELL_INTENT",
+            },
+        )
+
         await query.message.reply_text(get_text("upsellApproved", lang))
 
         return await start_form(update, context)
     else:
+        logger.info(
+            "Upsell qualification check failed",
+            extra={
+                "event": "upsell_qualification_failed",
+                "telegram_user_id": query.from_user.id if query.from_user else None,
+                "state": "UPSELL_INTENT",
+            },
+        )
         return await show_upsell_rejected(update, context)
 
 
@@ -164,6 +289,26 @@ async def upsell_intent_foundation_callback(
     user_data = UserData(context)
     user_data.set_upsell_answer("intent", "foundation")
 
+    logger.info(
+        "Upsell question Q2 answer received",
+        extra={
+            "event": "upsell_answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "UPSELL_INTENT",
+            "question": "q2",
+            "answer": "intent=foundation",
+        },
+    )
+
+    logger.info(
+        "Upsell qualification check failed",
+        extra={
+            "event": "upsell_qualification_failed",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "UPSELL_INTENT",
+        },
+    )
+
     return await show_upsell_rejected(update, context)
 
 
@@ -173,6 +318,20 @@ async def show_upsell_rejected(
     """Show upsell rejection - recommend Starter."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
+    )
+
+    logger.info(
+        "Upsell rejection shown",
+        extra={
+            "event": "upsell_rejected_shown",
+            "telegram_user_id": user.id if user else None,
+            "state": "RECOMMENDATION",
+        },
+    )
 
     await update.callback_query.message.reply_text(
         get_text("upsellRejected", lang),

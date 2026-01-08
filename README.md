@@ -12,10 +12,14 @@ A dual-language (Chinese/English) Telegram bot for converting high-level beauty 
 - Bilingual support (Chinese/English)
 - Welcome image with custom message
 - Diagnostic questionnaire with scoring logic
+- Review answers screen before recommendation
+- Back navigation during diagnosis and registration
+- Field-specific editing (edit one field without refilling entire form)
 - Program recommendation based on user responses
 - Registration form with validation
 - Google Sheets integration for lead tracking
 - Admin notifications for new leads and errors
+- Structured logging to stdout
 - Persistent menu button with commands
 
 ## Setup
@@ -52,6 +56,10 @@ SHEET_NAME=Sheet1
 
 # Admin Telegram User ID (for notifications)
 ADMIN_CHAT_ID=your_telegram_user_id
+
+# Logging level (optional, default: INFO)
+# Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_LEVEL=INFO
 ```
 
 ### 3. Welcome Image
@@ -182,15 +190,17 @@ Language Selection (中文 / English)
   ↓
 Positioning Message
   ↓
-Diagnostic Questions (Q1-Q4)
-  ↓
+Diagnostic Questions (Q1-Q3, Readiness)
+  ↓ (with Back buttons on Q2, Q3, Readiness)
+Review Answers Screen
+  ↓ (can edit any question, which requires re-confirming downstream questions)
 Scoring & Recommendation
   ↓
 ├── Starter Path → Registration Form
-└── Core Path → Gate Question → Registration Form
-  ↓
+└── Core Path → Upsell Questions → Registration Form
+  ↓ (with Back buttons between fields)
 Confirmation Summary
-  ↓
+  ↓ (can edit specific fields without refilling entire form)
 Submit to Google Sheets
   ↓
 Payment Instructions + Admin Notification

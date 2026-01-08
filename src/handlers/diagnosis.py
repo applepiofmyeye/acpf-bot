@@ -4,13 +4,20 @@ import re
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.i18n.messages import get_nested_text
-from src.keyboards.buttons import pain_question_keyboard, readiness_keyboard
+from src.i18n.messages import get_nested_text, get_text
+from src.keyboards.buttons import (
+    pain_question_keyboard,
+    readiness_keyboard,
+    review_answers_keyboard,
+)
 from src import states
 from src.enums import ReadinessAnswer
 from src.models.user_data import UserData
 from src.services.scoring import ScoreCalculator
+from src.services.logging_config import get_logger
 from src.handlers.recommendation import show_recommendation
+
+logger = get_logger(__name__)
 
 
 def parse_pain_answer(callback_data: str) -> tuple[str, str]:
@@ -57,6 +64,15 @@ async def start_diagnosis_callback(
     query = update.callback_query
     await query.answer()
 
+    logger.info(
+        "Diagnosis started",
+        extra={
+            "event": "diagnosis_started",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "POSITIONING",
+        },
+    )
+
     return await ask_pain_question(update, context, "q1", states.Q1)
 
 
@@ -65,16 +81,59 @@ async def ask_pain_question(
     context: ContextTypes.DEFAULT_TYPE,
     question_num: str,
     next_state: int,
+    show_back: bool = False,
 ) -> int:
-    """Ask a pain point question (generic function for DRY)."""
+    """Ask a pain point question (generic function for DRY).
+
+    Args:
+        update: Update object
+        context: Context object
+        question_num: Question number (q1, q2, q3)
+        next_state: Next conversation state
+        show_back: Whether to show back button (True for Q2, Q3)
+    """
     user_data = UserData(context)
     lang = user_data.lang or "en"
     question = get_nested_text(lang, "painQuestions", question_num, "question")
 
-    await update.callback_query.message.reply_text(
-        question,
-        reply_markup=pain_question_keyboard(question_num, lang),
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
     )
+
+    logger.info(
+        f"Pain question {question_num.upper()} asked",
+        extra={
+            "event": "question_asked",
+            "telegram_user_id": user.id if user else None,
+            "state": f"Q{question_num[-1]}",
+            "question": question_num,
+        },
+    )
+
+    # Add question number prefix
+    question_num_display = question_num.upper()  # Q1, Q2, Q3
+    if lang == "zh":
+        question_text = f"问题 {question_num_display[-1]}: {question}"
+    else:
+        question_text = f"{question_num_display}: {question}"
+
+    # Check if we have a callback query (from back navigation) or message
+    if update.callback_query:
+        await update.callback_query.message.reply_text(
+            question_text,
+            reply_markup=pain_question_keyboard(
+                question_num, lang, show_back=show_back
+            ),
+        )
+    else:
+        await update.message.reply_text(
+            question_text,
+            reply_markup=pain_question_keyboard(
+                question_num, lang, show_back=show_back
+            ),
+        )
 
     return next_state
 
@@ -103,15 +162,47 @@ async def handle_pain_answer(
     user_data = UserData(context)
     user_data.set_pain_answer(question_num, answer)
 
-    # Update score using ScoreCalculator
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.update_score(question_num, answer)
+    logger.info(
+        f"Pain question {question_num.upper()} answer received",
+        extra={
+            "event": "answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": f"Q{question_num[-1]}",
+            "question": question_num,
+            "answer": answer,
+        },
+    )
 
+    # Recalculate scores from all answers
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    logger.debug(
+        "Scores recalculated after answer",
+        extra={
+            "event": "score_recalculated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": f"Q{question_num[-1]}",
+            "starter_score": user_data.starter_score,
+            "core_score": user_data.core_score,
+        },
+    )
+
+    # If editing from review, return to review screen after answering (targeted edit)
+    if user_data.editing_from_review:
+        user_data.editing_from_review = False  # Clear flag
+        return await show_review_answers(update, context)
+
+    # Normal flow: continue to next question
     # Ask next question - readiness is handled differently
     if next_question == "readiness":
         return await ask_readiness(update, context)
     else:
-        return await ask_pain_question(update, context, next_question, next_state)
+        # Show back button for Q2 and Q3
+        show_back = next_question in ["q2", "q3"]
+        return await ask_pain_question(
+            update, context, next_question, next_state, show_back=show_back
+        )
 
 
 async def ask_pain_q1(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -152,16 +243,45 @@ async def ask_readiness(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     lang = user_data.lang or "en"
     question = get_nested_text(lang, "readinessQuestion", "question")
 
-    await update.callback_query.message.reply_text(
-        question,
-        reply_markup=readiness_keyboard(lang),
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
     )
+
+    logger.info(
+        "Readiness question (Q4) asked",
+        extra={
+            "event": "question_asked",
+            "telegram_user_id": user.id if user else None,
+            "state": "READINESS",
+            "question": "readiness",
+        },
+    )
+
+    # Add question number prefix (Q4)
+    if lang == "zh":
+        question_text = f"问题 4: {question}"
+    else:
+        question_text = f"Q4: {question}"
+
+    # Check if we have a callback query or message
+    if update.callback_query:
+        await update.callback_query.message.reply_text(
+            question_text,
+            reply_markup=readiness_keyboard(lang, show_back=True),
+        )
+    else:
+        await update.message.reply_text(
+            question_text,
+            reply_markup=readiness_keyboard(lang, show_back=True),
+        )
 
     return states.READINESS
 
 
 async def readiness_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle readiness answer and calculate recommendation."""
+    """Handle readiness answer and show review screen."""
     query = update.callback_query
     await query.answer()
 
@@ -171,13 +291,321 @@ async def readiness_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_data = UserData(context)
     user_data.readiness = answer
 
-    # Update score using ScoreCalculator (needs string value for scoring rules)
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.update_score("readiness", answer.value)
+    logger.info(
+        "Readiness question (Q4) answer received",
+        extra={
+            "event": "answer_received",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "READINESS",
+            "question": "readiness",
+            "answer": answer.value,
+        },
+    )
 
-    # Calculate recommendation
+    # Recalculate scores from all answers
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    logger.debug(
+        "Scores recalculated after readiness answer",
+        extra={
+            "event": "score_recalculated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "READINESS",
+            "starter_score": user_data.starter_score,
+            "core_score": user_data.core_score,
+        },
+    )
+
+    # If editing from review, return to review screen after answering
+    if user_data.editing_from_review:
+        user_data.editing_from_review = False  # Clear flag
+        return await show_review_answers(update, context)
+
+    # Calculate recommendation (but don't show it yet - show review first)
     recommendation = score_calculator.calculate_recommendation()
     user_data.recommendation = recommendation.value  # Store as string for compatibility
 
-    # Show recommendation
+    logger.debug(
+        "Recommendation calculated",
+        extra={
+            "event": "recommendation_calculated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "READINESS",
+            "recommendation": recommendation.value,
+            "starter_score": user_data.starter_score,
+            "core_score": user_data.core_score,
+        },
+    )
+
+    # Show review answers screen
+    return await show_review_answers(update, context)
+
+
+async def show_review_answers(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Show review answers screen before recommendation."""
+    user_data = UserData(context)
+    lang = user_data.lang or "en"
+    pain_answers = user_data.pain_answers
+    readiness = user_data.readiness
+
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
+    )
+
+    logger.info(
+        "Review answers screen shown",
+        extra={
+            "event": "review_screen_shown",
+            "telegram_user_id": user.id if user else None,
+            "state": "REVIEW_ANSWERS",
+        },
+    )
+
+    # Build review text
+    review_text = get_text("reviewAnswers", lang)
+
+    # Add Q1 answer
+    if pain_answers.get("q1"):
+        q1_options = get_nested_text(lang, "painQuestions", "q1", "options")
+        q1_answer = q1_options.get(pain_answers["q1"], "")
+        review_text += get_text("reviewQ1", lang).format(answer=q1_answer) + "\n"
+
+    # Add Q2 answer
+    if pain_answers.get("q2"):
+        q2_options = get_nested_text(lang, "painQuestions", "q2", "options")
+        q2_answer = q2_options.get(pain_answers["q2"], "")
+        review_text += get_text("reviewQ2", lang).format(answer=q2_answer) + "\n"
+
+    # Add Q3 answer
+    if pain_answers.get("q3"):
+        q3_options = get_nested_text(lang, "painQuestions", "q3", "options")
+        q3_answer = q3_options.get(pain_answers["q3"], "")
+        review_text += get_text("reviewQ3", lang).format(answer=q3_answer) + "\n"
+
+    # Add Q4 (readiness) answer
+    if readiness:
+        readiness_options = get_nested_text(lang, "readinessQuestion", "options")
+        readiness_answer = readiness_options.get(readiness.value, "")
+        review_text += get_text("reviewQ4", lang).format(answer=readiness_answer) + "\n"
+
+    # Send review message
+    if update.callback_query:
+        await update.callback_query.message.reply_text(
+            review_text,
+            reply_markup=review_answers_keyboard(lang),
+        )
+    else:
+        await update.message.reply_text(
+            review_text,
+            reply_markup=review_answers_keyboard(lang),
+        )
+
+    return states.REVIEW_ANSWERS
+
+
+async def proceed_to_recommendation_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle proceed to recommendation from review screen."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Proceed to recommendation clicked",
+        extra={
+            "event": "proceed_to_recommendation",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "REVIEW_ANSWERS",
+        },
+    )
+
     return await show_recommendation(update, context)
+
+
+async def review_edit_q1_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle edit Q1 from review screen - targeted edit, returns to review."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Edit Q1 from review initiated",
+        extra={
+            "event": "review_edit_initiated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "REVIEW_ANSWERS",
+            "question": "q1",
+        },
+    )
+
+    # Set flag to indicate we're editing from review
+    user_data = UserData(context)
+    user_data.editing_from_review = True
+
+    # Clear only Q1 answer (targeted edit, don't clear downstream)
+    user_data.set_pain_answer("q1", None)
+
+    # Recalculate scores
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    return await ask_pain_question(update, context, "q1", states.Q1, show_back=False)
+
+
+async def review_edit_q2_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle edit Q2 from review screen - targeted edit, returns to review."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Edit Q2 from review initiated",
+        extra={
+            "event": "review_edit_initiated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "REVIEW_ANSWERS",
+            "question": "q2",
+        },
+    )
+
+    # Set flag to indicate we're editing from review
+    user_data = UserData(context)
+    user_data.editing_from_review = True
+
+    # Clear only Q2 answer (targeted edit, don't clear downstream)
+    user_data.set_pain_answer("q2", None)
+
+    # Recalculate scores
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    return await ask_pain_question(update, context, "q2", states.Q2, show_back=True)
+
+
+async def review_edit_q3_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle edit Q3 from review screen - targeted edit, returns to review."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Edit Q3 from review initiated",
+        extra={
+            "event": "review_edit_initiated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "REVIEW_ANSWERS",
+            "question": "q3",
+        },
+    )
+
+    # Set flag to indicate we're editing from review
+    user_data = UserData(context)
+    user_data.editing_from_review = True
+
+    # Clear only Q3 answer (targeted edit, don't clear downstream)
+    user_data.set_pain_answer("q3", None)
+
+    # Recalculate scores
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    return await ask_pain_question(update, context, "q3", states.Q3, show_back=True)
+
+
+async def review_edit_readiness_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle edit Q4 (readiness) from review screen - targeted edit, returns to review."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Edit Q4 (readiness) from review initiated",
+        extra={
+            "event": "review_edit_initiated",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "REVIEW_ANSWERS",
+            "question": "readiness",
+        },
+    )
+
+    # Set flag to indicate we're editing from review
+    user_data = UserData(context)
+    user_data.editing_from_review = True
+
+    # Clear only readiness answer (targeted edit)
+    user_data.readiness = None
+
+    # Recalculate scores
+    score_calculator = ScoreCalculator(user_data)
+    score_calculator.recalculate_scores()
+
+    return await ask_readiness(update, context)
+
+
+async def diag_back_q1_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle back navigation to Q1."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Back navigation to Q1",
+        extra={
+            "event": "back_navigation",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "Q2",
+            "target_question": "q1",
+        },
+    )
+
+    return await ask_pain_question(update, context, "q1", states.Q1, show_back=False)
+
+
+async def diag_back_q2_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle back navigation to Q2."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Back navigation to Q2",
+        extra={
+            "event": "back_navigation",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "Q3",
+            "target_question": "q2",
+        },
+    )
+
+    return await ask_pain_question(update, context, "q2", states.Q2, show_back=True)
+
+
+async def diag_back_q3_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    """Handle back navigation to Q3."""
+    query = update.callback_query
+    await query.answer()
+
+    logger.info(
+        "Back navigation to Q3",
+        extra={
+            "event": "back_navigation",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "READINESS",
+            "target_question": "q3",
+        },
+    )
+
+    return await ask_pain_question(update, context, "q3", states.Q3, show_back=True)

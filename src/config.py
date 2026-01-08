@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     )
     sheet_name: str = Field(default="Sheet1", description="Google Sheets sheet name")
 
+    # Logging configuration
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+    )
+
     # Paths (computed properties)
     @property
     def base_dir(self) -> Path:
@@ -57,6 +63,7 @@ ADMIN_CHAT_ID = settings.admin_chat_id
 GOOGLE_SERVICE_ACCOUNT_JSON = settings.google_service_account_json
 SPREADSHEET_ID = settings.spreadsheet_id
 SHEET_NAME = settings.sheet_name
+LOG_LEVEL = settings.log_level
 BASE_DIR = settings.base_dir
 ASSETS_DIR = settings.assets_dir
 WELCOME_IMAGE_PATH = settings.welcome_image_path
@@ -68,10 +75,18 @@ def validate_config() -> bool:
     Returns:
         True if configuration is valid, False otherwise
     """
+    # Lazy import to avoid circular dependency
+    from src.services.logging_config import get_logger
+
+    logger = get_logger(__name__)
+
     # Pydantic Settings already validates required fields on instantiation
     # This function is kept for backward compatibility
     if not settings.bot_token:
-        print("Error: BOT_TOKEN environment variable is not set")
+        logger.error(
+            "BOT_TOKEN environment variable is not set",
+            extra={"event": "config_validation_failed"},
+        )
         return False
 
     return True

@@ -1,12 +1,52 @@
-"""Admin notification service for ACPF Bot."""
+"""Admin notification service for ACPF Bot.
 
+DEPRECATED: This module is deprecated and notification calls have been removed
+from the handlers. The functions remain for potential future use but are not
+currently called anywhere in the codebase.
+"""
+
+import warnings
 from telegram import Bot
 
 from src.config import ADMIN_CHAT_ID
+from src.services.logging_config import get_logger
+
+logger = get_logger(__name__)
+
+
+def _normalize_admin_chat_id(chat_id: str | None) -> str | None:
+    """Normalize admin chat ID by stripping whitespace.
+
+    Args:
+        chat_id: Raw chat ID from config (may have whitespace or @ prefix)
+
+    Returns:
+        Normalized chat ID string or None if invalid
+    """
+    if not chat_id:
+        return None
+
+    # Strip whitespace
+    normalized = chat_id.strip()
+
+    # Handle @username format (Telegram supports this for public channels/groups)
+    # For now, we'll pass it through as-is since Telegram API handles it
+    if normalized.startswith("@"):
+        return normalized
+
+    # If it's numeric, ensure it's clean
+    if normalized.replace("-", "").replace("+", "").isdigit():
+        return normalized
+
+    # If it's not numeric and doesn't start with @, might be invalid
+    # But we'll still try to send it (could be a channel username without @)
+    return normalized if normalized else None
 
 
 async def notify_admin(bot: Bot, message: str) -> bool:
     """Send a notification message to the admin.
+
+    DEPRECATED: This function is deprecated and not currently used.
 
     Args:
         bot: The Telegram bot instance
@@ -15,18 +55,38 @@ async def notify_admin(bot: Bot, message: str) -> bool:
     Returns:
         True if notification was sent successfully, False otherwise
     """
-    if not ADMIN_CHAT_ID:
-        print("ADMIN_CHAT_ID not set, skipping notification")
+    warnings.warn(
+        "notify_admin is deprecated and not currently used",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    admin_chat_id = _normalize_admin_chat_id(ADMIN_CHAT_ID)
+
+    if not admin_chat_id:
+        logger.info(
+            "ADMIN_CHAT_ID not set, skipping notification",
+            extra={"event": "notification_skipped"},
+        )
         return False
 
     try:
         await bot.send_message(
-            chat_id=ADMIN_CHAT_ID,
+            chat_id=admin_chat_id,
             text=message,
         )
+        logger.info(
+            "Admin notification sent successfully",
+            extra={"event": "notification_sent", "chat_id": admin_chat_id[:10] + "..."},
+        )
         return True
-    except Exception as e:
-        print(f"Failed to send admin notification: {e}")
+    except Exception:
+        logger.exception(
+            "Failed to send admin notification",
+            extra={
+                "event": "notification_failed",
+                "chat_id": admin_chat_id[:10] + "...",
+            },
+        )
         return False
 
 
@@ -45,6 +105,8 @@ async def notify_new_lead(
     timestamp: str,
 ) -> bool:
     """Notify admin about a new lead registration.
+
+    DEPRECATED: This function is deprecated and not currently used.
 
     Args:
         bot: The Telegram bot instance
@@ -90,6 +152,8 @@ async def notify_core_review_request(
 ) -> bool:
     """Notify admin about a Core review request (upsell flow start).
 
+    DEPRECATED: This function is deprecated and not currently used.
+
     Args:
         bot: The Telegram bot instance
         username: Telegram username
@@ -117,6 +181,8 @@ async def notify_core_review_qualified(
 ) -> bool:
     """Notify admin about a Core review qualification.
 
+    DEPRECATED: This function is deprecated and not currently used.
+
     Args:
         bot: The Telegram bot instance
         username: Telegram username
@@ -143,6 +209,8 @@ async def notify_submission_error(
     lead_info: str,
 ) -> bool:
     """Notify admin about a submission error.
+
+    DEPRECATED: This function is deprecated and not currently used.
 
     Args:
         bot: The Telegram bot instance

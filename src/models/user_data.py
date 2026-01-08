@@ -282,6 +282,16 @@ class UserData:
         current = self._user_data.get("core_score", 0)
         self._user_data["core_score"] = current + 1
 
+    @property
+    def editing_from_review(self) -> bool:
+        """Check if user is editing from review screen."""
+        return self._user_data.get("editing_from_review", False)
+
+    @editing_from_review.setter
+    def editing_from_review(self, value: bool) -> None:
+        """Set editing from review flag."""
+        self._user_data["editing_from_review"] = value
+
     def reset(self) -> None:
         """Reset all user data to initial state."""
         self._user_data["lang"] = None
@@ -299,3 +309,4 @@ class UserData:
         }
         self._user_data["starter_score"] = 0
         self._user_data["core_score"] = 0
+        self._user_data["editing_from_review"] = False

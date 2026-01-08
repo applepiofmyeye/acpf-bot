@@ -8,6 +8,9 @@ from src.i18n.messages import WELCOME_MESSAGE, get_text
 from src.keyboards.buttons import language_keyboard, start_diagnosis_keyboard
 from src import states
 from src.models.user_data import UserData
+from src.services.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 def init_user_data(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -18,8 +21,18 @@ def init_user_data(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle /start command - show welcome image and language selection."""
+    user = update.effective_user
     # Initialize user data
     init_user_data(context)
+
+    logger.info(
+        "Start command received",
+        extra={
+            "event": "start_command",
+            "telegram_user_id": user.id if user else None,
+            "state": "LANGUAGE_SELECT",
+        },
+    )
 
     # Build welcome message (bilingual)
     welcome_text = f"{WELCOME_MESSAGE['en']}\n\n{WELCOME_MESSAGE['zh']}"
@@ -58,6 +71,16 @@ async def language_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user_data = UserData(context)
     user_data.lang = lang
 
+    logger.info(
+        "Language selected",
+        extra={
+            "event": "language_selected",
+            "telegram_user_id": query.from_user.id if query.from_user else None,
+            "state": "LANGUAGE_SELECT",
+            "language": lang,
+        },
+    )
+
     # Send language confirmation
     await query.message.reply_text(get_text("languageChanged", lang))
 
@@ -69,6 +92,21 @@ async def show_positioning(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     """Show positioning message with Start Diagnosis button."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
+    user = (
+        update.callback_query.from_user
+        if update.callback_query
+        else update.effective_user
+    )
+
+    logger.info(
+        "Positioning message shown",
+        extra={
+            "event": "positioning_shown",
+            "telegram_user_id": user.id if user else None,
+            "state": "POSITIONING",
+            "language": lang,
+        },
+    )
 
     await update.callback_query.message.reply_text(
         get_text("positioning", lang),
