@@ -53,9 +53,6 @@ from src.handlers.registration import (
     edit_field_email_callback,
     edit_field_business_callback,
     back_to_summary_callback,
-    reg_back_name_callback,
-    reg_back_phone_callback,
-    reg_back_email_callback,
     handle_edit_name,
     handle_edit_phone,
     handle_edit_email,
@@ -154,21 +151,12 @@ def main() -> None:
             ],
             states.REG_NAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name),
-                CallbackQueryHandler(
-                    reg_back_name_callback, pattern=r"^reg_back_name$"
-                ),
             ],
             states.REG_PHONE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_phone),
-                CallbackQueryHandler(
-                    reg_back_phone_callback, pattern=r"^reg_back_phone$"
-                ),
             ],
             states.REG_EMAIL: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_email),
-                CallbackQueryHandler(
-                    reg_back_email_callback, pattern=r"^reg_back_email$"
-                ),
             ],
             states.REG_BUSINESS: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_business_type),

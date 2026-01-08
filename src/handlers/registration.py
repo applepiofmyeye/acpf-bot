@@ -10,7 +10,6 @@ from src.i18n.messages import get_text, get_nested_text, build_pain_point_summar
 from src.keyboards.buttons import (
     confirmation_keyboard,
     edit_form_menu_keyboard,
-    registration_back_keyboard,
 )
 from src import states
 from src.models.user_data import UserData
@@ -57,7 +56,7 @@ async def start_form(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # Show disclaimer first
     await update.callback_query.message.reply_text(form_text.get("disclaimer", ""))
 
-    # Then ask for name (no back button on first field)
+    # Then ask for name
     logger.info(
         "Form field prompt shown",
         extra={
@@ -70,7 +69,6 @@ async def start_form(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     await update.callback_query.message.reply_text(
         form_text.get("askName", "Please enter your full name:"),
-        reply_markup=registration_back_keyboard(lang, "full_name"),
     )
 
     return states.REG_NAME
@@ -150,8 +148,7 @@ async def handle_form_field(
         },
     )
 
-    # Ask for next field with back button
-    back_keyboard = registration_back_keyboard(lang, field_name)
+    # Ask for next field
     logger.info(
         "Form field prompt shown",
         extra={
@@ -163,7 +160,6 @@ async def handle_form_field(
     )
     await update.message.reply_text(
         form_text.get(next_prompt_key, ""),
-        reply_markup=back_keyboard,
     )
 
     return next_state
@@ -491,96 +487,6 @@ async def back_to_summary_callback(
     )
 
     return await show_summary(update, context)
-
-
-async def reg_back_name_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle back to name field."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Back navigation to name field",
-        extra={
-            "event": "back_navigation",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REG_PHONE",
-            "target_field": "full_name",
-        },
-    )
-
-    user_data = UserData(context)
-    lang = user_data.lang or "en"
-    form_text = get_nested_text(lang, "form")
-
-    # Edit the previous message to show name prompt (no back button on first field)
-    await query.message.edit_text(
-        form_text.get("askName", "Please enter your full name:"),
-        reply_markup=None,
-    )
-
-    return states.REG_NAME
-
-
-async def reg_back_phone_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle back to phone field."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Back navigation to phone field",
-        extra={
-            "event": "back_navigation",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REG_EMAIL",
-            "target_field": "phone",
-        },
-    )
-
-    user_data = UserData(context)
-    lang = user_data.lang or "en"
-    form_text = get_nested_text(lang, "form")
-
-    # Edit the previous message to show phone prompt with back button
-    await query.message.edit_text(
-        form_text.get("askPhone", "Please enter your phone number:"),
-        reply_markup=registration_back_keyboard(lang, "phone"),
-    )
-
-    return states.REG_PHONE
-
-
-async def reg_back_email_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle back to email field."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Back navigation to email field",
-        extra={
-            "event": "back_navigation",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REG_BUSINESS",
-            "target_field": "email",
-        },
-    )
-
-    user_data = UserData(context)
-    lang = user_data.lang or "en"
-    form_text = get_nested_text(lang, "form")
-
-    # Edit the previous message to show email prompt with back button
-    await query.message.edit_text(
-        form_text.get("askEmail", "Please enter your email:"),
-        reply_markup=registration_back_keyboard(lang, "email"),
-    )
-
-    return states.REG_EMAIL
 
 
 async def handle_edit_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
