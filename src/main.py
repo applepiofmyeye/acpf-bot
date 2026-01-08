@@ -12,6 +12,7 @@ from telegram.ext import (
 
 from src.config import BOT_TOKEN, validate_config
 from src import states
+from src.services.logging_config import get_logger
 from src.handlers.start import (
     start_command,
     language_callback,
@@ -22,6 +23,14 @@ from src.handlers.diagnosis import (
     pain_q2_callback,
     pain_q3_callback,
     readiness_callback,
+    proceed_to_recommendation_callback,
+    review_edit_q1_callback,
+    review_edit_q2_callback,
+    review_edit_q3_callback,
+    review_edit_readiness_callback,
+    diag_back_q1_callback,
+    diag_back_q2_callback,
+    diag_back_q3_callback,
 )
 from src.handlers.recommendation import (
     select_starter_callback,
@@ -38,13 +47,27 @@ from src.handlers.registration import (
     handle_email,
     handle_business_type,
     confirm_submit_callback,
-    edit_form_callback,
+    edit_form_menu_callback,
+    edit_field_name_callback,
+    edit_field_phone_callback,
+    edit_field_email_callback,
+    edit_field_business_callback,
+    back_to_summary_callback,
+    reg_back_name_callback,
+    reg_back_phone_callback,
+    reg_back_email_callback,
+    handle_edit_name,
+    handle_edit_phone,
+    handle_edit_email,
+    handle_edit_business,
 )
 from src.handlers.commands import (
     restart_command,
     language_command,
     setup_bot_commands,
 )
+
+logger = get_logger(__name__)
 
 
 def main() -> None:
@@ -75,12 +98,33 @@ def main() -> None:
             ],
             states.Q2: [
                 CallbackQueryHandler(pain_q2_callback, pattern=r"^pain_q2_[abcd]$"),
+                CallbackQueryHandler(diag_back_q1_callback, pattern=r"^diag_back_q1$"),
             ],
             states.Q3: [
                 CallbackQueryHandler(pain_q3_callback, pattern=r"^pain_q3_[abcd]$"),
+                CallbackQueryHandler(diag_back_q2_callback, pattern=r"^diag_back_q2$"),
             ],
             states.READINESS: [
                 CallbackQueryHandler(readiness_callback, pattern=r"^readiness_[abcd]$"),
+                CallbackQueryHandler(diag_back_q3_callback, pattern=r"^diag_back_q3$"),
+            ],
+            states.REVIEW_ANSWERS: [
+                CallbackQueryHandler(
+                    proceed_to_recommendation_callback,
+                    pattern=r"^proceed_to_recommendation$",
+                ),
+                CallbackQueryHandler(
+                    review_edit_q1_callback, pattern=r"^review_edit_q1$"
+                ),
+                CallbackQueryHandler(
+                    review_edit_q2_callback, pattern=r"^review_edit_q2$"
+                ),
+                CallbackQueryHandler(
+                    review_edit_q3_callback, pattern=r"^review_edit_q3$"
+                ),
+                CallbackQueryHandler(
+                    review_edit_readiness_callback, pattern=r"^review_edit_readiness$"
+                ),
             ],
             states.RECOMMENDATION: [
                 CallbackQueryHandler(
@@ -110,12 +154,21 @@ def main() -> None:
             ],
             states.REG_NAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name),
+                CallbackQueryHandler(
+                    reg_back_name_callback, pattern=r"^reg_back_name$"
+                ),
             ],
             states.REG_PHONE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_phone),
+                CallbackQueryHandler(
+                    reg_back_phone_callback, pattern=r"^reg_back_phone$"
+                ),
             ],
             states.REG_EMAIL: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_email),
+                CallbackQueryHandler(
+                    reg_back_email_callback, pattern=r"^reg_back_email$"
+                ),
             ],
             states.REG_BUSINESS: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_business_type),
@@ -124,7 +177,38 @@ def main() -> None:
                 CallbackQueryHandler(
                     confirm_submit_callback, pattern=r"^confirm_submit$"
                 ),
-                CallbackQueryHandler(edit_form_callback, pattern=r"^edit_form$"),
+                CallbackQueryHandler(
+                    edit_form_menu_callback, pattern=r"^edit_form_menu$"
+                ),
+            ],
+            states.EDIT_FORM_MENU: [
+                CallbackQueryHandler(
+                    edit_field_name_callback, pattern=r"^edit_field_name$"
+                ),
+                CallbackQueryHandler(
+                    edit_field_phone_callback, pattern=r"^edit_field_phone$"
+                ),
+                CallbackQueryHandler(
+                    edit_field_email_callback, pattern=r"^edit_field_email$"
+                ),
+                CallbackQueryHandler(
+                    edit_field_business_callback, pattern=r"^edit_field_business$"
+                ),
+                CallbackQueryHandler(
+                    back_to_summary_callback, pattern=r"^back_to_summary$"
+                ),
+            ],
+            states.EDIT_NAME: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_name),
+            ],
+            states.EDIT_PHONE: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_phone),
+            ],
+            states.EDIT_EMAIL: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_email),
+            ],
+            states.EDIT_BUSINESS: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_business),
             ],
         },
         fallbacks=[
@@ -146,12 +230,14 @@ def main() -> None:
     # Set up bot commands on startup
     async def post_init(app: Application) -> None:
         await setup_bot_commands(app)
-        print("Bot commands registered successfully")
+        logger.info(
+            "Bot commands registered successfully", extra={"event": "bot_startup"}
+        )
 
     application.post_init = post_init
 
     # Start the bot
-    print("Starting ACPF bot...")
+    logger.info("Starting ACPF bot...", extra={"event": "bot_startup"})
     application.run_polling(allowed_updates=["message", "callback_query"])
 
 

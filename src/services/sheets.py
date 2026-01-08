@@ -9,6 +9,9 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 from src.config import GOOGLE_SERVICE_ACCOUNT_JSON, SPREADSHEET_ID, SHEET_NAME
+from src.services.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # Cache the client
 _sheets_client = None
@@ -148,15 +151,56 @@ async def append_lead_row(row_data: List[str]) -> None:
             insert_data_option="INSERT_ROWS",
         )
 
-    except gspread.exceptions.SpreadsheetNotFound:
+        logger.info(
+            "Lead row appended to Google Sheets",
+            extra={
+                "event": "sheet_append_success",
+                "sheet_name": SHEET_NAME,
+                "spreadsheet_id_suffix": SPREADSHEET_ID[-8:]
+                if SPREADSHEET_ID
+                else None,
+            },
+        )
+
+    except gspread.exceptions.SpreadsheetNotFound as e:
+        logger.error(
+            "Spreadsheet not found",
+            extra={
+                "event": "sheet_error",
+                "sheet_name": SHEET_NAME,
+                "spreadsheet_id_suffix": SPREADSHEET_ID[-8:]
+                if SPREADSHEET_ID
+                else None,
+            },
+        )
         raise ValueError(
             f"Spreadsheet with ID '{SPREADSHEET_ID}' not found. "
             f"Make sure it's shared with the service account email."
+        ) from e
+    except gspread.exceptions.WorksheetNotFound as e:
+        logger.error(
+            "Worksheet not found",
+            extra={
+                "event": "sheet_error",
+                "sheet_name": SHEET_NAME,
+                "spreadsheet_id_suffix": SPREADSHEET_ID[-8:]
+                if SPREADSHEET_ID
+                else None,
+            },
         )
-    except gspread.exceptions.WorksheetNotFound:
         raise ValueError(
             f"Worksheet '{SHEET_NAME}' not found in the spreadsheet. "
             f"Available worksheets: {[ws.title for ws in spreadsheet.worksheets()]}"
-        )
+        ) from e
     except Exception as e:
-        raise RuntimeError(f"Failed to append row to Google Sheets: {e}")
+        logger.exception(
+            "Failed to append row to Google Sheets",
+            extra={
+                "event": "sheet_error",
+                "sheet_name": SHEET_NAME,
+                "spreadsheet_id_suffix": SPREADSHEET_ID[-8:]
+                if SPREADSHEET_ID
+                else None,
+            },
+        )
+        raise RuntimeError(f"Failed to append row to Google Sheets: {e}") from e

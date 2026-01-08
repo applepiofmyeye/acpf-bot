@@ -1,6 +1,9 @@
 """Upsell qualification service."""
 
 from src.models.user_data import UserData
+from src.services.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class UpsellQualifier:
@@ -25,4 +28,16 @@ class UpsellQualifier:
         has_team = upsell_answers.get("has_team")
         intent = upsell_answers.get("intent")
 
-        return has_team is True and intent == "scale"
+        qualifies = has_team is True and intent == "scale"
+
+        logger.debug(
+            "Upsell qualification check",
+            extra={
+                "event": "upsell_qualification_check",
+                "has_team": has_team,
+                "intent": intent,
+                "qualifies": qualifies,
+            },
+        )
+
+        return qualifies
