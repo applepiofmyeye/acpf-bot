@@ -5,32 +5,35 @@ from telegram.ext import ContextTypes, ConversationHandler
 
 from src.i18n.messages import get_text
 from src.keyboards.buttons import language_keyboard
-from src.handlers.start import init_user_data, LANGUAGE_SELECT
+from src import states
+from src.models.user_data import UserData
 
 
 async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle /restart command - clear session and start over."""
-    lang = context.user_data.get("lang", "en")
-    
+    user_data = UserData(context)
+    lang = user_data.lang or "en"
+
     # Keep language preference but reset everything else
-    init_user_data(context)
-    context.user_data["lang"] = lang
-    
+    user_data.reset()
+    user_data.lang = lang
+
     await update.message.reply_text(get_text("sessionCleared", lang))
-    
+
     return ConversationHandler.END
 
 
 async def language_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle /language command - change language preference."""
-    lang = context.user_data.get("lang", "en")
-    
+    user_data = UserData(context)
+    lang = user_data.lang or "en"
+
     await update.message.reply_text(
         get_text("languagePrompt", lang),
         reply_markup=language_keyboard(),
     )
-    
-    return LANGUAGE_SELECT
+
+    return states.LANGUAGE_SELECT
 
 
 async def setup_bot_commands(application) -> None:
@@ -40,7 +43,5 @@ async def setup_bot_commands(application) -> None:
         BotCommand("language", "Change language / 更改语言"),
         BotCommand("restart", "Start over / 重新开始"),
     ]
-    
+
     await application.bot.set_my_commands(commands)
-
-

@@ -23,7 +23,14 @@ A dual-language (Chinese/English) Telegram bot for converting high-level beauty 
 ### 1. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+# Install uv if you haven't already
+pip install uv
+
+# Sync dependencies (installs all packages from pyproject.toml)
+uv sync
+
+# Or if using an existing venv
+uv sync --active
 ```
 
 ### 2. Environment Variables
@@ -127,6 +134,30 @@ The SPREADSHEET_ID is in the URL: `docs.google.com/spreadsheets/d/SPREADSHEET_ID
 1. Search for @userinfobot on Telegram
 2. Start a chat and send any message
 3. It will reply with your user ID
+
+## Managing Dependencies
+
+### Adding a new dependency
+
+```bash
+uv add package-name --active
+```
+
+### Removing a dependency
+
+```bash
+uv remove package-name --active
+```
+
+### Syncing dependencies
+
+```bash
+# Sync with existing venv
+uv sync --active
+
+# Or create new venv
+uv sync
+```
 
 ## Running the Bot
 

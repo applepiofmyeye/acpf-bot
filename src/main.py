@@ -11,23 +11,10 @@ from telegram.ext import (
 )
 
 from src.config import BOT_TOKEN, validate_config
+from src import states
 from src.handlers.start import (
     start_command,
     language_callback,
-    LANGUAGE_SELECT,
-    POSITIONING,
-    Q1,
-    Q2,
-    Q3,
-    READINESS,
-    RECOMMENDATION,
-    UPSELL_TEAM,
-    UPSELL_INTENT,
-    REG_NAME,
-    REG_PHONE,
-    REG_EMAIL,
-    REG_BUSINESS,
-    CONFIRMATION,
 )
 from src.handlers.diagnosis import (
     start_diagnosis_callback,
@@ -65,61 +52,78 @@ def main() -> None:
     # Validate configuration
     if not validate_config():
         sys.exit(1)
-    
+
     # Create application
     application = Application.builder().token(BOT_TOKEN).build()
-    
+
     # Build conversation handler
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", start_command),
         ],
         states={
-            LANGUAGE_SELECT: [
+            states.LANGUAGE_SELECT: [
                 CallbackQueryHandler(language_callback, pattern=r"^lang_(zh|en)$"),
             ],
-            POSITIONING: [
-                CallbackQueryHandler(start_diagnosis_callback, pattern=r"^start_diagnosis$"),
+            states.POSITIONING: [
+                CallbackQueryHandler(
+                    start_diagnosis_callback, pattern=r"^start_diagnosis$"
+                ),
             ],
-            Q1: [
+            states.Q1: [
                 CallbackQueryHandler(pain_q1_callback, pattern=r"^pain_q1_[abcd]$"),
             ],
-            Q2: [
+            states.Q2: [
                 CallbackQueryHandler(pain_q2_callback, pattern=r"^pain_q2_[abcd]$"),
             ],
-            Q3: [
+            states.Q3: [
                 CallbackQueryHandler(pain_q3_callback, pattern=r"^pain_q3_[abcd]$"),
             ],
-            READINESS: [
+            states.READINESS: [
                 CallbackQueryHandler(readiness_callback, pattern=r"^readiness_[abcd]$"),
             ],
-            RECOMMENDATION: [
-                CallbackQueryHandler(select_starter_callback, pattern=r"^select_starter$"),
+            states.RECOMMENDATION: [
+                CallbackQueryHandler(
+                    select_starter_callback, pattern=r"^select_starter$"
+                ),
                 CallbackQueryHandler(select_core_callback, pattern=r"^select_core$"),
-                CallbackQueryHandler(apply_core_review_callback, pattern=r"^apply_core_review$"),
+                CallbackQueryHandler(
+                    apply_core_review_callback, pattern=r"^apply_core_review$"
+                ),
             ],
-            UPSELL_TEAM: [
-                CallbackQueryHandler(upsell_team_yes_callback, pattern=r"^upsell_team_yes$"),
-                CallbackQueryHandler(upsell_team_no_callback, pattern=r"^upsell_team_no$"),
+            states.UPSELL_TEAM: [
+                CallbackQueryHandler(
+                    upsell_team_yes_callback, pattern=r"^upsell_team_yes$"
+                ),
+                CallbackQueryHandler(
+                    upsell_team_no_callback, pattern=r"^upsell_team_no$"
+                ),
             ],
-            UPSELL_INTENT: [
-                CallbackQueryHandler(upsell_intent_scale_callback, pattern=r"^upsell_intent_scale$"),
-                CallbackQueryHandler(upsell_intent_foundation_callback, pattern=r"^upsell_intent_foundation$"),
+            states.UPSELL_INTENT: [
+                CallbackQueryHandler(
+                    upsell_intent_scale_callback, pattern=r"^upsell_intent_scale$"
+                ),
+                CallbackQueryHandler(
+                    upsell_intent_foundation_callback,
+                    pattern=r"^upsell_intent_foundation$",
+                ),
             ],
-            REG_NAME: [
+            states.REG_NAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name),
             ],
-            REG_PHONE: [
+            states.REG_PHONE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_phone),
             ],
-            REG_EMAIL: [
+            states.REG_EMAIL: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_email),
             ],
-            REG_BUSINESS: [
+            states.REG_BUSINESS: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_business_type),
             ],
-            CONFIRMATION: [
-                CallbackQueryHandler(confirm_submit_callback, pattern=r"^confirm_submit$"),
+            states.CONFIRMATION: [
+                CallbackQueryHandler(
+                    confirm_submit_callback, pattern=r"^confirm_submit$"
+                ),
                 CallbackQueryHandler(edit_form_callback, pattern=r"^edit_form$"),
             ],
         },
@@ -131,21 +135,21 @@ def main() -> None:
         per_user=True,
         per_chat=True,
     )
-    
+
     # Add handlers
     application.add_handler(conv_handler)
-    
+
     # Add standalone command handlers (for when not in conversation)
     application.add_handler(CommandHandler("restart", restart_command))
     application.add_handler(CommandHandler("language", language_command))
-    
+
     # Set up bot commands on startup
     async def post_init(app: Application) -> None:
         await setup_bot_commands(app)
         print("Bot commands registered successfully")
-    
+
     application.post_init = post_init
-    
+
     # Start the bot
     print("Starting ACPF bot...")
     application.run_polling(allowed_updates=["message", "callback_query"])
@@ -153,5 +157,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
