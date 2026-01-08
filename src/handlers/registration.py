@@ -222,13 +222,9 @@ async def submit_lead(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         # Send success message
         await update.callback_query.message.reply_text(get_text("success", lang))
         
-        # Send payment info with button
-        from src.keyboards.buttons import payment_details_keyboard
+        # Send payment info
         payment_text = get_text("paymentInfo", lang)
-        await update.callback_query.message.reply_text(
-            payment_text,
-            reply_markup=payment_details_keyboard(lang),
-        )
+        await update.callback_query.message.reply_text(payment_text)
         
     except Exception as e:
         print(f"Google Sheets error: {e}")
@@ -237,24 +233,3 @@ async def submit_lead(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.callback_query.message.reply_text(get_text("error", lang))
     
     return ConversationHandler.END
-
-
-async def show_payment_details_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle payment details button - show payment information."""
-    query = update.callback_query
-    await query.answer()
-    
-    lang = context.user_data.get("lang", "en")
-    program = context.user_data.get("program", "starter")
-    
-    from src.config import PROGRAM_PRICES
-    amount = PROGRAM_PRICES.get(program, "588")
-    
-    payment_text = get_text("paymentInfo", lang)
-    if "{amount}" in payment_text:
-        payment_text = payment_text.format(amount=amount)
-    
-    await query.message.reply_text(payment_text)
-    
-    return ConversationHandler.END
-

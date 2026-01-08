@@ -125,10 +125,3 @@ def confirmation_keyboard(lang: str) -> InlineKeyboardMarkup:
     ])
 
 
-def payment_details_keyboard(lang: str) -> InlineKeyboardMarkup:
-    """Build keyboard for payment details button."""
-    from src.i18n.messages import get_text
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(get_text("paymentButton", lang), callback_data="show_payment_details")],
-    ])
-
