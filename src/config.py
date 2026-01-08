@@ -1,56 +1,77 @@
 """Configuration module for ACPF Bot."""
 
-import os
 from pathlib import Path
-from dotenv import load_dotenv
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Load environment variables
-load_dotenv()
 
-# Bot configuration
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
 
-# Google Sheets configuration
-GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
-SHEET_NAME = os.getenv("SHEET_NAME", "Sheet1")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
-# Paths
-BASE_DIR = Path(__file__).parent.parent
-ASSETS_DIR = BASE_DIR / "assets"
-WELCOME_IMAGE_PATH = ASSETS_DIR / "welcome.jpg"
+    # Bot configuration
+    bot_token: str = Field(..., description="Telegram Bot API token")
+    admin_chat_id: str | None = Field(
+        default=None, description="Telegram chat ID for admin notifications"
+    )
 
-# Scoring rules for recommendation logic
-SCORING_RULES = {
-    "q1": {"a": "starter", "b": "core", "c": "core", "d": "core"},
-    "q2": {"a": "starter", "b": "core", "c": "core", "d": "core"},
-    "q3": {"a": "starter", "b": "core", "c": "core", "d": "core"},
-    "readiness": {"a": "starter", "b": "starter", "c": "core", "d": "core"},
-}
+    # Google Sheets configuration
+    google_service_account_json: str | None = Field(
+        default=None,
+        description="Google Sheets service account credentials JSON (base64 or plain)",
+    )
+    spreadsheet_id: str | None = Field(
+        default=None, description="Google Sheets spreadsheet ID"
+    )
+    sheet_name: str = Field(default="Sheet1", description="Google Sheets sheet name")
 
-# Program labels
-PROGRAM_LABELS = {
-    "starter": "Starter",
-    "core": "Core",
-    "coreReview": "Core (Review)",
-}
+    # Paths (computed properties)
+    @property
+    def base_dir(self) -> Path:
+        """Get base directory."""
+        return Path(__file__).parent.parent
 
-# Program prices (in RM)
-PROGRAM_PRICES = {
-    "starter": "588",
-    "core": "5,997",
-}
+    @property
+    def assets_dir(self) -> Path:
+        """Get assets directory."""
+        return self.base_dir / "assets"
+
+    @property
+    def welcome_image_path(self) -> Path:
+        """Get welcome image path."""
+        return self.assets_dir / "welcome.jpg"
+
+
+# Create global settings instance
+settings = Settings()
+
+# Export for backward compatibility
+BOT_TOKEN = settings.bot_token
+ADMIN_CHAT_ID = settings.admin_chat_id
+GOOGLE_SERVICE_ACCOUNT_JSON = settings.google_service_account_json
+SPREADSHEET_ID = settings.spreadsheet_id
+SHEET_NAME = settings.sheet_name
+BASE_DIR = settings.base_dir
+ASSETS_DIR = settings.assets_dir
+WELCOME_IMAGE_PATH = settings.welcome_image_path
 
 
 def validate_config() -> bool:
-    """Validate that all required environment variables are set."""
-    required = ["BOT_TOKEN"]
-    missing = [var for var in required if not os.getenv(var)]
-    
-    if missing:
-        print(f"Error: Missing required environment variables: {', '.join(missing)}")
-        return False
-    
-    return True
+    """Validate that all required environment variables are set.
 
+    Returns:
+        True if configuration is valid, False otherwise
+    """
+    # Pydantic Settings already validates required fields on instantiation
+    # This function is kept for backward compatibility
+    if not settings.bot_token:
+        print("Error: BOT_TOKEN environment variable is not set")
+        return False
+
+    return True

@@ -262,11 +262,14 @@ def get_nested_text(lang: str, *keys: str) -> Any:
 def build_pain_point_summary(pain_answers: dict, lang: str = "en") -> str:
     """Build a human-readable pain point summary from answers."""
     parts = []
-    
+
     for q_key in ["q1", "q2", "q3"]:
         answer = pain_answers.get(q_key)
-        if answer and q_key in PAIN_POINT_SUMMARY and answer in PAIN_POINT_SUMMARY[q_key]:
+        if (
+            answer
+            and q_key in PAIN_POINT_SUMMARY
+            and answer in PAIN_POINT_SUMMARY[q_key]
+        ):
             parts.append(PAIN_POINT_SUMMARY[q_key][answer][lang])
-    
-    return " | ".join(parts) if parts else "-"
 
+    return " | ".join(parts) if parts else "-"
