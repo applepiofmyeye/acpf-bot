@@ -188,11 +188,6 @@ async def handle_pain_answer(
         },
     )
 
-    # If editing from review, return to review screen after answering (targeted edit)
-    if user_data.editing_from_review:
-        user_data.editing_from_review = False  # Clear flag
-        return await show_review_answers(update, context)
-
     # Normal flow: continue to next question
     # Ask next question - readiness is handled differently
     if next_question == "readiness":
@@ -317,11 +312,6 @@ async def readiness_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         },
     )
 
-    # If editing from review, return to review screen after answering
-    if user_data.editing_from_review:
-        user_data.editing_from_review = False  # Clear flag
-        return await show_review_answers(update, context)
-
     # Calculate recommendation (but don't show it yet - show review first)
     recommendation = score_calculator.calculate_recommendation()
     user_data.recommendation = recommendation.value  # Store as string for compatibility
@@ -425,130 +415,6 @@ async def proceed_to_recommendation_callback(
     )
 
     return await show_recommendation(update, context)
-
-
-async def review_edit_q1_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle edit Q1 from review screen - targeted edit, returns to review."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Edit Q1 from review initiated",
-        extra={
-            "event": "review_edit_initiated",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REVIEW_ANSWERS",
-            "question": "q1",
-        },
-    )
-
-    # Set flag to indicate we're editing from review
-    user_data = UserData(context)
-    user_data.editing_from_review = True
-
-    # Clear only Q1 answer (targeted edit, don't clear downstream)
-    user_data.set_pain_answer("q1", None)
-
-    # Recalculate scores
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.recalculate_scores()
-
-    return await ask_pain_question(update, context, "q1", states.Q1, show_back=False)
-
-
-async def review_edit_q2_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle edit Q2 from review screen - targeted edit, returns to review."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Edit Q2 from review initiated",
-        extra={
-            "event": "review_edit_initiated",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REVIEW_ANSWERS",
-            "question": "q2",
-        },
-    )
-
-    # Set flag to indicate we're editing from review
-    user_data = UserData(context)
-    user_data.editing_from_review = True
-
-    # Clear only Q2 answer (targeted edit, don't clear downstream)
-    user_data.set_pain_answer("q2", None)
-
-    # Recalculate scores
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.recalculate_scores()
-
-    return await ask_pain_question(update, context, "q2", states.Q2, show_back=True)
-
-
-async def review_edit_q3_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle edit Q3 from review screen - targeted edit, returns to review."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Edit Q3 from review initiated",
-        extra={
-            "event": "review_edit_initiated",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REVIEW_ANSWERS",
-            "question": "q3",
-        },
-    )
-
-    # Set flag to indicate we're editing from review
-    user_data = UserData(context)
-    user_data.editing_from_review = True
-
-    # Clear only Q3 answer (targeted edit, don't clear downstream)
-    user_data.set_pain_answer("q3", None)
-
-    # Recalculate scores
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.recalculate_scores()
-
-    return await ask_pain_question(update, context, "q3", states.Q3, show_back=True)
-
-
-async def review_edit_readiness_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
-    """Handle edit Q4 (readiness) from review screen - targeted edit, returns to review."""
-    query = update.callback_query
-    await query.answer()
-
-    logger.info(
-        "Edit Q4 (readiness) from review initiated",
-        extra={
-            "event": "review_edit_initiated",
-            "telegram_user_id": query.from_user.id if query.from_user else None,
-            "state": "REVIEW_ANSWERS",
-            "question": "readiness",
-        },
-    )
-
-    # Set flag to indicate we're editing from review
-    user_data = UserData(context)
-    user_data.editing_from_review = True
-
-    # Clear only readiness answer (targeted edit)
-    user_data.readiness = None
-
-    # Recalculate scores
-    score_calculator = ScoreCalculator(user_data)
-    score_calculator.recalculate_scores()
-
-    return await ask_readiness(update, context)
 
 
 async def diag_back_q1_callback(

@@ -24,10 +24,6 @@ from src.handlers.diagnosis import (
     pain_q3_callback,
     readiness_callback,
     proceed_to_recommendation_callback,
-    review_edit_q1_callback,
-    review_edit_q2_callback,
-    review_edit_q3_callback,
-    review_edit_readiness_callback,
     diag_back_q1_callback,
     diag_back_q2_callback,
     diag_back_q3_callback,
@@ -47,16 +43,6 @@ from src.handlers.registration import (
     handle_email,
     handle_business_type,
     confirm_submit_callback,
-    edit_form_menu_callback,
-    edit_field_name_callback,
-    edit_field_phone_callback,
-    edit_field_email_callback,
-    edit_field_business_callback,
-    back_to_summary_callback,
-    handle_edit_name,
-    handle_edit_phone,
-    handle_edit_email,
-    handle_edit_business,
 )
 from src.handlers.commands import (
     restart_command,
@@ -110,18 +96,6 @@ def main() -> None:
                     proceed_to_recommendation_callback,
                     pattern=r"^proceed_to_recommendation$",
                 ),
-                CallbackQueryHandler(
-                    review_edit_q1_callback, pattern=r"^review_edit_q1$"
-                ),
-                CallbackQueryHandler(
-                    review_edit_q2_callback, pattern=r"^review_edit_q2$"
-                ),
-                CallbackQueryHandler(
-                    review_edit_q3_callback, pattern=r"^review_edit_q3$"
-                ),
-                CallbackQueryHandler(
-                    review_edit_readiness_callback, pattern=r"^review_edit_readiness$"
-                ),
             ],
             states.RECOMMENDATION: [
                 CallbackQueryHandler(
@@ -165,38 +139,6 @@ def main() -> None:
                 CallbackQueryHandler(
                     confirm_submit_callback, pattern=r"^confirm_submit$"
                 ),
-                CallbackQueryHandler(
-                    edit_form_menu_callback, pattern=r"^edit_form_menu$"
-                ),
-            ],
-            states.EDIT_FORM_MENU: [
-                CallbackQueryHandler(
-                    edit_field_name_callback, pattern=r"^edit_field_name$"
-                ),
-                CallbackQueryHandler(
-                    edit_field_phone_callback, pattern=r"^edit_field_phone$"
-                ),
-                CallbackQueryHandler(
-                    edit_field_email_callback, pattern=r"^edit_field_email$"
-                ),
-                CallbackQueryHandler(
-                    edit_field_business_callback, pattern=r"^edit_field_business$"
-                ),
-                CallbackQueryHandler(
-                    back_to_summary_callback, pattern=r"^back_to_summary$"
-                ),
-            ],
-            states.EDIT_NAME: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_name),
-            ],
-            states.EDIT_PHONE: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_phone),
-            ],
-            states.EDIT_EMAIL: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_email),
-            ],
-            states.EDIT_BUSINESS: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_business),
             ],
         },
         fallbacks=[

@@ -224,39 +224,6 @@ def confirmation_keyboard(lang: str) -> InlineKeyboardMarkup:
     )
 
 
-def edit_form_menu_keyboard(lang: str) -> InlineKeyboardMarkup:
-    """Build keyboard for edit form menu (field selection)."""
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    get_text("editName", lang), callback_data="edit_field_name"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    get_text("editPhone", lang), callback_data="edit_field_phone"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    get_text("editEmail", lang), callback_data="edit_field_email"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    get_text("editBusiness", lang), callback_data="edit_field_business"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    get_text("back", lang), callback_data="back_to_summary"
-                )
-            ],
-        ]
-    )
-
-
 def registration_back_keyboard(
     lang: str, current_field: str
 ) -> InlineKeyboardMarkup | None:
