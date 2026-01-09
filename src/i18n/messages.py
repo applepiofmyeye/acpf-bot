@@ -56,7 +56,7 @@ PROMPTS = {
         "recommendStarter": {
             "message": "根据你的情况，我们建议你从 ACPF Starter 开始。\n\nStarter 每两个月开班一次，帮助你建立系统思维的基础。",
             "cta": "📝 报名 Starter（RM588）",
-            "upsell": "🔎 申请 Core 评估",
+            "upsell": "🔎 申请 海・陆・空新美业系统 评估",
         },
         "recommendCore": {
             "message": "根据你的回答，你已经不是入门阶段。\n你现在需要的不是更多技巧，而是一套能复制能放大，能长期运转的系统。\n\n我们建议你申请：\n👉 ACPF 新美业大学生意管理课程（RM5,997）\n• 3 天完整的美业体系\n• 海・陆・空新美业系统\n• KPI 与数据化管理\n• Raffles University 官方认证课程",
@@ -74,13 +74,13 @@ PROMPTS = {
                 "foundation": "建立一套长期可运转的系统",
             },
         },
-        "upsellApproved": "我们将为你安排 Core 人工确认，请留下资料。",
+        "upsellApproved": "我们将为你安排 海・陆・空新美业系统 人工确认，请留下资料。",
         "upsellRejected": "从你目前阶段，Starter 会更稳。建议先从 Starter 开始。",
         "backToStarter": "📝 报名 Starter（RM588）",
         "gateQuestion": "你是否曾参加过 ACPF Starter？",
         "gateYes": "✅ 是",
         "gateNo": "❌ 否",
-        "gateNoResponse": "Core 课程需要先完成 Starter 作为基础。\n\nStarter 每两个月开班一次，费用为 RM588。\n\n如果你准备好了，可以先报名 Starter。",
+        "gateNoResponse": "海・陆・空新美业系统 课程需要先完成 Starter 作为基础。\n\nStarter 每两个月开班一次，费用为 RM588。\n\n如果你准备好了，可以先报名 Starter。",
         "registerStarter": "📝 报名 Starter",
         "form": {
             "disclaimer": "Disclaimer: 你的资料将用于新美业大学生意管理课程评估与联系安排。",
@@ -119,6 +119,11 @@ Swift Code: PBBEMYKL
         "languagePrompt": "请选择您的语言：",
         "btnChinese": "🇨🇳 中文",
         "btnEnglish": "🇬🇧 English",
+        "programLabels": {
+            "starter": "Starter",
+            "core": "海・陆・空新美业系统",
+            "coreReview": "海・陆・空新美业系统（评估）",
+        },
     },
     "en": {
         "welcome": "Welcome to ACPF.\nPlease select your language:",
@@ -166,7 +171,7 @@ Swift Code: PBBEMYKL
         "recommendStarter": {
             "message": "Based on your situation, we recommend you start with ACPF Starter.\n\nStarter runs every two months, helping you build a foundation for systematic thinking.",
             "cta": "📝 Register Starter (RM588)",
-            "upsell": "🔎 Apply for Core Review",
+            "upsell": "🔎 Apply for Professional Certificate Beauty Management Strategy Review",
         },
         "recommendCore": {
             "message": "Based on your answers, you're beyond the beginner stage.\n\nYou don't need more techniques—you need a system that can be replicated, scaled, and run sustainably.\n\nWe recommend:\n👉 ACPF New Beauty Business Management Course (RM5,997)\n• 3-day complete beauty business system\n• Professional Certificate Beauty Management Strategy\n• KPI and data-driven management\n• Raffles University official certified course",
@@ -184,13 +189,13 @@ Swift Code: PBBEMYKL
                 "foundation": "Build a long-term sustainable system",
             },
         },
-        "upsellApproved": "We will arrange a Core manual review for you. Please provide your details.",
+        "upsellApproved": "We will arrange a Professional Certificate Beauty Management Strategy manual review for you. Please provide your details.",
         "upsellRejected": "Based on your current stage, Starter would be more stable. We recommend starting with Starter first.",
         "backToStarter": "📝 Register Starter (RM588)",
         "gateQuestion": "Have you attended ACPF Starter before?",
         "gateYes": "✅ Yes",
         "gateNo": "❌ No",
-        "gateNoResponse": "The Core program requires completing Starter as a foundation.\n\nStarter runs every two months at RM588.\n\nIf you are ready, you may register for Starter first.",
+        "gateNoResponse": "The Professional Certificate Beauty Management Strategy program requires completing Starter as a foundation.\n\nStarter runs every two months at RM588.\n\nIf you are ready, you may register for Starter first.",
         "registerStarter": "📝 Register Starter",
         "form": {
             "disclaimer": "Disclaimer: Your information will be used for the New Beauty Business Management Course evaluation and contact arrangement.",
@@ -229,6 +234,11 @@ Once confirmed, we will notify you immediately about course arrangements and det
         "languagePrompt": "Please select your language:",
         "btnChinese": "🇨🇳 中文",
         "btnEnglish": "🇬🇧 English",
+        "programLabels": {
+            "starter": "Starter",
+            "core": "Professional Certificate Beauty Management Strategy",
+            "coreReview": "Professional Certificate Beauty Management Strategy (Review)",
+        },
     },
 }
 
@@ -285,3 +295,19 @@ def build_pain_point_summary(pain_answers: dict, lang: str = "en") -> str:
             parts.append(PAIN_POINT_SUMMARY[q_key][answer][lang])
 
     return " | ".join(parts) if parts else "-"
+
+
+def get_program_label(program_type: str, lang: str = "en") -> str:
+    """Get program label by program type and language.
+
+    Args:
+        program_type: Program type value (e.g., "starter", "core", "coreReview")
+        lang: Language code ("zh" or "en")
+
+    Returns:
+        Localized program label string
+    """
+    program_labels = get_nested_text(lang, "programLabels")
+    if isinstance(program_labels, dict):
+        return program_labels.get(program_type, program_type)
+    return program_type

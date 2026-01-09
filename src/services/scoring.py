@@ -108,12 +108,12 @@ class RecommendationCalculator:
 
         Args:
             starter_score: Starter program score
-            core_score: Core program score
+            core_score: Professional Certificate Beauty Management Strategy program score
 
         Returns:
             ProgramType.CORE if core_score > starter_score, otherwise ProgramType.STARTER
         """
         if core_score > starter_score:
             return ProgramType.CORE
-        else: 
+        else:
             return ProgramType.CORE

@@ -123,7 +123,7 @@ async def append_lead_row(row_data: List[str]) -> None:
         7. Email
         8. Beauty Business Type
         9. Current Stage (Exploring / Stuck / Scaling)
-        10. Tier Interested (Entry / Core / Premium)
+        10. Tier Interested (Entry / Professional Certificate Beauty Management Strategy / Premium)
         11. Reason for Joining
         12. Source (Bot / Landing Page / Referral)
 

@@ -27,7 +27,9 @@ async def show_recommendation(
     """Show program recommendation based on scoring."""
     user_data = UserData(context)
     lang = user_data.lang or "en"
-    recommendation_str = ProgramType.CORE.value # Push for Core
+    recommendation_str = (
+        ProgramType.CORE.value
+    )  # Push for Professional Certificate Beauty Management Strategy
     user = (
         update.callback_query.from_user
         if update.callback_query
@@ -87,7 +89,7 @@ async def select_starter_callback(
 async def select_core_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> int:
-    """Handle Core selection - proceed to registration."""
+    """Handle Professional Certificate Beauty Management Strategy selection - proceed to registration."""
     query = update.callback_query
     await query.answer()
 
@@ -96,7 +98,7 @@ async def select_core_callback(
     user_data.program = ProgramType.CORE.value
 
     logger.info(
-        "Core program selected",
+        "Professional Certificate Beauty Management Strategy program selected",
         extra={
             "event": "program_selected",
             "telegram_user_id": query.from_user.id if query.from_user else None,
@@ -111,7 +113,7 @@ async def select_core_callback(
 async def apply_core_review_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> int:
-    """Handle Core Review application - start upsell flow."""
+    """Handle Professional Certificate Beauty Management Strategy Review application - start upsell flow."""
     query = update.callback_query
     await query.answer()
 
@@ -120,7 +122,7 @@ async def apply_core_review_callback(
     user = query.from_user
 
     logger.info(
-        "Core Review request started",
+        "Professional Certificate Beauty Management Strategy Review request started",
         extra={
             "event": "core_review_request",
             "telegram_user_id": user.id,
@@ -248,7 +250,7 @@ async def upsell_intent_scale_callback(
         },
     )
 
-    # Check if qualifies for Core Review using UpsellQualifier
+    # Check if qualifies for Professional Certificate Beauty Management Strategy Review using UpsellQualifier
     qualifier = UpsellQualifier()
     if qualifier.qualifies_for_core_review(user_data):
         user_data.track = ProgramType.CORE_REVIEW.value
@@ -256,7 +258,7 @@ async def upsell_intent_scale_callback(
 
         user = query.from_user
         logger.info(
-            "Core Review qualified",
+            "Professional Certificate Beauty Management Strategy Review qualified",
             extra={
                 "event": "core_review_qualified",
                 "telegram_user_id": user.id,

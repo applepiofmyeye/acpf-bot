@@ -4,9 +4,13 @@ from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
 
-from src.constants import PROGRAM_LABELS
 from src.enums import ProgramType
-from src.i18n.messages import get_text, get_nested_text, build_pain_point_summary
+from src.i18n.messages import (
+    get_text,
+    get_nested_text,
+    build_pain_point_summary,
+    get_program_label,
+)
 from src.keyboards.buttons import (
     confirmation_keyboard,
 )
@@ -269,7 +273,7 @@ async def show_summary(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         },
     )
 
-    program_label = PROGRAM_LABELS.get(ProgramType(program_str), program_str)
+    program_label = get_program_label(program_str, lang)
     pain_point = build_pain_point_summary(pain_answers, lang)
 
     # Get form data values, handling None case

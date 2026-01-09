@@ -92,7 +92,7 @@ class TierInterested(str, Enum):
     """Tier interested based on program selection."""
 
     ENTRY = "Entry"
-    CORE = "Core"
+    CORE = "Professional Certificate Beauty Management Strategy"
     PREMIUM = "Premium"
 
     @classmethod

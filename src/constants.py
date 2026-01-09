@@ -29,8 +29,8 @@ SCORING_RULES = {
 # Program labels
 PROGRAM_LABELS = {
     ProgramType.STARTER: "Starter",
-    ProgramType.CORE: "Core",
-    ProgramType.CORE_REVIEW: "Core (Review)",
+    ProgramType.CORE: "Professional Certificate Beauty Management Strategy",
+    ProgramType.CORE_REVIEW: "Professional Certificate Beauty Management Strategy (Review)",
 }
 
 # Program prices (in RM)
