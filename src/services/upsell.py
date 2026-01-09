@@ -7,11 +7,11 @@ logger = get_logger(__name__)
 
 
 class UpsellQualifier:
-    """Determines if user qualifies for Core Review upsell."""
+    """Determines if user qualifies for Professional Certificate Beauty Management Strategy Review upsell."""
 
     @staticmethod
     def qualifies_for_core_review(user_data: UserData) -> bool:
-        """Check if user qualifies for Core Review.
+        """Check if user qualifies for Professional Certificate Beauty Management Strategy Review.
 
         Qualification criteria:
         - User must have a team (has_team == True)

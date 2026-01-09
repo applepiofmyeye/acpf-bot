@@ -114,10 +114,7 @@ async def ask_pain_question(
 
     # Add question number prefix
     question_num_display = question_num.upper()  # Q1, Q2, Q3
-    if lang == "zh":
-        question_text = f"问题 {question_num_display[-1]}: {question}"
-    else:
-        question_text = f"{question_num_display}: {question}"
+    question_text = f"{question_num_display}: {question}"
 
     # Check if we have a callback query (from back navigation) or message
     if update.callback_query:
@@ -255,10 +252,7 @@ async def ask_readiness(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     )
 
     # Add question number prefix (Q4)
-    if lang == "zh":
-        question_text = f"问题 4: {question}"
-    else:
-        question_text = f"Q4: {question}"
+    question_text = f"Q4: {question}"
 
     # Check if we have a callback query or message
     if update.callback_query:

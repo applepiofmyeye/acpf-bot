@@ -114,7 +114,10 @@ def starter_recommendation_keyboard(lang: str) -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    rec.get("upsell", "Apply for Core Review"),
+                    rec.get(
+                        "upsell",
+                        "Apply for Professional Certificate Beauty Management Strategy Review",
+                    ),
                     callback_data="apply_core_review",
                 )
             ],
@@ -123,14 +126,18 @@ def starter_recommendation_keyboard(lang: str) -> InlineKeyboardMarkup:
 
 
 def core_recommendation_keyboard(lang: str) -> InlineKeyboardMarkup:
-    """Build keyboard for Core recommendation."""
+    """Build keyboard for Professional Certificate Beauty Management Strategy recommendation."""
     rec = get_nested_text(lang, "recommendCore")
 
     return InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
-                    rec.get("cta", "Register Core"), callback_data="select_core"
+                    rec.get(
+                        "cta",
+                        "Register Professional Certificate Beauty Management Strategy",
+                    ),
+                    callback_data="select_core",
                 )
             ],
         ]

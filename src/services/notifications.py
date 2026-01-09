@@ -110,8 +110,8 @@ async def notify_new_lead(
 
     Args:
         bot: The Telegram bot instance
-        program: Selected program (Starter/Core)
-        track: Track (Starter/Core/CoreReview)
+        program: Selected program (Starter/Professional Certificate Beauty Management Strategy)
+        track: Track (Starter/Professional Certificate Beauty Management Strategy/CoreReview)
         name: User's full name
         phone: User's phone number
         email: User's email
@@ -150,7 +150,7 @@ async def notify_core_review_request(
     user_id: int,
     language: str,
 ) -> bool:
-    """Notify admin about a Core review request (upsell flow start).
+    """Notify admin about a Professional Certificate Beauty Management Strategy review request (upsell flow start).
 
     DEPRECATED: This function is deprecated and not currently used.
 
@@ -163,7 +163,7 @@ async def notify_core_review_request(
     Returns:
         True if notification was sent successfully, False otherwise
     """
-    message = f"""🔔 Core Review Request
+    message = f"""🔔 Professional Certificate Beauty Management Strategy Review Request
 
 👤 User: @{username or "N/A"} (ID: {user_id})
 🌐 Language: {language}
@@ -179,7 +179,7 @@ async def notify_core_review_qualified(
     has_team: bool,
     intent: str,
 ) -> bool:
-    """Notify admin about a Core review qualification.
+    """Notify admin about a Professional Certificate Beauty Management Strategy review qualification.
 
     DEPRECATED: This function is deprecated and not currently used.
 
@@ -193,12 +193,12 @@ async def notify_core_review_qualified(
     Returns:
         True if notification was sent successfully, False otherwise
     """
-    message = f"""✅ Core Review Qualified
+    message = f"""✅ Professional Certificate Beauty Management Strategy Review Qualified
 
 👤 User: @{username or "N/A"} (ID: {user_id})
 👥 Has Team: {"Yes" if has_team else "No"}
 🎯 Intent: {intent.title()}
-📊 Status: Approved for Core review"""
+📊 Status: Approved for Professional Certificate Beauty Management Strategy review"""
 
     return await notify_admin(bot, message)
 
