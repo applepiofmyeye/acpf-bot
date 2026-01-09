@@ -7,7 +7,7 @@ class ProgramType(str, Enum):
     """Program types available in the system."""
 
     STARTER = "starter"
-    CORE = "core"
+    CORE = "Professional Certificate Beauty Management Strategy"
     CORE_REVIEW = "coreReview"
 
     def __str__(self) -> str:
@@ -19,7 +19,7 @@ class ScoreType(str, Enum):
     """Score types for recommendation calculation."""
 
     STARTER = "starter"
-    CORE = "core"
+    CORE = "Professional Certificate Beauty Management Strategy"
 
     def __str__(self) -> str:
         """Return the string value for compatibility."""
